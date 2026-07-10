@@ -1,0 +1,417 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  MODERATOR
+}
+
+enum District {
+  SINDHUDURG
+  RATNAGIRI
+  RAIGAD
+}
+
+enum LocationCategory {
+  BEACH
+  WATERFALL
+  FORT
+  TEMPLE
+  TRAIL
+  VIEWPOINT
+  EATERY
+  HERITAGE
+  HOMESTAY
+  OTHER
+}
+
+enum CrowdLevel {
+  VERY_LOW
+  LOW
+  MEDIUM
+  HIGH
+  VERY_HIGH
+}
+
+enum Difficulty {
+  EASY
+  MODERATE
+  HARD
+  EXPERT
+}
+
+enum RoadCondition {
+  EXCELLENT
+  GOOD
+  FAIR
+  POOR
+  OFFROAD
+}
+
+enum Season {
+  MONSOON
+  WINTER
+  SUMMER
+  ALL_YEAR
+}
+
+enum LocationStatus {
+  DRAFT
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum NotificationType {
+  LIKE
+  COMMENT
+  FOLLOW
+  VERIFICATION
+  APPROVAL
+  WEATHER_ALERT
+  ROAD_CLOSURE
+  ACHIEVEMENT
+  SYSTEM
+}
+
+enum VerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  name           String?
+  password       String?
+  avatar         String?
+  bio            String?
+  location       String?
+  role           UserRole  @default(USER)
+  emailVerified  DateTime?
+  reputation     Float     @default(0)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  accounts       Account[]
+  sessions       Session[]
+  locations      Location[]    @relation("contributor")
+  photos         Photo[]
+  savedPlaces    SavedPlace[]
+  trips          Trip[]
+  reviews        Review[]
+  stories        Story[]
+  comments       Comment[]
+  likes          Like[]
+  notifications  Notification[] @relation("notificationRecipient")
+  actedNotifications Notification[] @relation("notificationActor")
+  achievements   Achievement[]
+  userBadges     UserBadge[]
+  verifications  Verification[]
+  followers      Follow[]  @relation("following")
+  following      Follow[]  @relation("follower")
+
+  @@index([reputation])
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model Location {
+  id                String           @id @default(cuid())
+  name              String
+  slug              String           @unique
+  description       String           @db.Text
+  district          District
+  category          LocationCategory
+  latitude          Float
+  longitude         Float
+  hiddenScore       Float            @default(0)
+  crowdLevel        CrowdLevel       @default(LOW)
+  difficulty        Difficulty       @default(EASY)
+  roadCondition     RoadCondition    @default(GOOD)
+  bestSeason        Season           @default(ALL_YEAR)
+  entryFee          String?
+  parking           String?
+  network           String?
+  accessibility     String?
+  bestTime          String?
+  sunset            String?
+  safety            String?
+  verified          Boolean          @default(false)
+  verificationCount Int              @default(0)
+  status            LocationStatus   @default(DRAFT)
+  tags              String[]
+  images            String[]
+  userId            String
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  contributor   User            @relation("contributor", fields: [userId], references: [id])
+  photos        Photo[]
+  savedBy       SavedPlace[]
+  tripLocations TripLocation[]
+  reviews       Review[]
+  stories       Story[]
+  comments      Comment[]
+  likes         Like[]
+  notifications Notification[]
+  verifications Verification[]
+
+  @@index([district])
+  @@index([category])
+  @@index([status])
+  @@index([verified])
+  @@index([hiddenScore])
+  @@index([userId])
+  @@map("locations")
+}
+
+model Photo {
+  id         String   @id @default(cuid())
+  url        String
+  caption    String?
+  locationId String
+  userId     String
+  createdAt  DateTime @default(now())
+
+  location Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id])
+
+  @@map("photos")
+}
+
+model SavedPlace {
+  id             String   @id @default(cuid())
+  userId         String
+  locationId     String
+  collectionName String?
+  createdAt      DateTime @default(now())
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  location Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, locationId])
+  @@map("saved_places")
+}
+
+model Trip {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  userId      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  locations TripLocation[]
+
+  @@index([userId, updatedAt])
+  @@map("trips")
+}
+
+model TripLocation {
+  id         String  @id @default(cuid())
+  tripId     String
+  locationId String
+  order      Int
+  notes      String?
+
+  trip     Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  location Location @relation(fields: [locationId], references: [id])
+
+  @@map("trip_locations")
+}
+
+model Review {
+  id         String   @id @default(cuid())
+  content    String   @db.Text
+  rating     Int
+  locationId String
+  userId     String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  location Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, locationId])
+  @@index([createdAt])
+  @@index([locationId])
+  @@map("reviews")
+}
+
+model Story {
+  id         String   @id @default(cuid())
+  title      String
+  content    String   @db.Text
+  coverImage String?
+  locationId String?
+  userId     String
+  published  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  location Location? @relation(fields: [locationId], references: [id])
+  user     User      @relation(fields: [userId], references: [id])
+  likes    Like[]
+
+  @@index([published, createdAt])
+  @@index([userId])
+  @@map("stories")
+}
+
+model Follow {
+  id          String   @id @default(cuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+
+  follower  User @relation("follower", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("following", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@map("follows")
+}
+
+model Notification {
+  id         String           @id @default(cuid())
+  type       NotificationType
+  title      String
+  message    String
+  read       Boolean          @default(false)
+  userId     String
+  actorId    String?
+  locationId String?
+  createdAt  DateTime         @default(now())
+
+  user     User      @relation("notificationRecipient", fields: [userId], references: [id], onDelete: Cascade)
+  actor    User?     @relation("notificationActor", fields: [actorId], references: [id])
+  location Location? @relation(fields: [locationId], references: [id])
+
+  @@index([userId, read])
+  @@map("notifications")
+}
+
+model Achievement {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  icon        String
+  criteria    String
+  userId      String
+  unlockedAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("achievements")
+}
+
+model Badge {
+  id          String @id @default(cuid())
+  name        String @unique
+  description String
+  icon        String
+  category    String
+
+  userBadges UserBadge[]
+
+  @@map("badges")
+}
+
+model UserBadge {
+  id       String   @id @default(cuid())
+  userId   String
+  badgeId  String
+  earnedAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge Badge @relation(fields: [badgeId], references: [id])
+
+  @@unique([userId, badgeId])
+  @@map("user_badges")
+}
+
+model Comment {
+  id         String   @id @default(cuid())
+  content    String   @db.Text
+  locationId String
+  userId     String
+  parentId   String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  location Location  @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  user     User      @relation(fields: [userId], references: [id])
+  parent   Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies  Comment[] @relation("CommentReplies")
+
+  @@map("comments")
+}
+
+model Like {
+  id         String   @id @default(cuid())
+  userId     String
+  locationId String?
+  commentId  String?
+  storyId    String?
+  createdAt  DateTime @default(now())
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  location Location? @relation(fields: [locationId], references: [id])
+  story    Story?    @relation(fields: [storyId], references: [id])
+
+  @@map("likes")
+}
+
+model Verification {
+  id         String             @id @default(cuid())
+  locationId String
+  userId     String
+  status     VerificationStatus @default(PENDING)
+  notes      String?
+  createdAt  DateTime           @default(now())
+
+  location Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, locationId])
+  @@map("verifications")
+}

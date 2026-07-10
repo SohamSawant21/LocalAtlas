@@ -1,0 +1,103 @@
+'use client';
+
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { cn } from '@/lib/utils';
+import { NAV_LINKS } from '@/constants';
+import { useSession, signOut } from 'next-auth/react';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+
+export function NavBar() {
+  const pathname = usePathname();
+  const { data: session, status } = useSession();
+
+  return (
+    <nav className="fixed top-0 w-full z-50 bg-white/60 dark:bg-black/60 backdrop-blur-md border-b border-white/20 shadow-sm transition-all duration-300 ease-in-out">
+      <div className="flex justify-between items-center w-full px-margin-desktop py-4 max-w-container-max mx-auto md:px-margin-desktop px-margin-mobile">
+        <Link
+          href="/"
+          className="text-headline-md font-headline-md font-bold text-primary dark:text-primary-fixed"
+        >
+          LocalAtlas
+        </Link>
+        <div className="hidden md:flex gap-6 items-center">
+          {NAV_LINKS.map((link) => {
+            const isActive = pathname === link.href;
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={cn(
+                  'transition-colors hover:bg-surface-variant/50 dark:hover:bg-surface-variant/20 rounded-lg px-3 py-2 font-label-md text-label-md',
+                  isActive
+                    ? 'text-primary dark:text-primary-fixed font-bold border-b-2 border-primary dark:border-primary-fixed pb-1'
+                    : 'text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary-fixed'
+                )}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
+        </div>
+        <div className="flex items-center gap-4">
+          <div className="relative hidden md:block">
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">
+              search
+            </span>
+            <input
+              className="pl-10 pr-4 py-2 rounded-[16px] border border-surface-variant bg-surface-bright focus:ring-1 focus:ring-primary focus:border-primary outline-none font-body-md text-body-md w-64"
+              placeholder="Search..."
+              type="text"
+            />
+          </div>
+          {/* Profile Active Indicator */}
+          {status === 'loading' ? (
+            <div className="w-10 h-10 rounded-full bg-surface-variant animate-pulse" />
+          ) : session?.user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger className="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold hover:opacity-90 transition-opacity focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 overflow-hidden">
+                {session.user.image ? (
+                  <img src={session.user.image} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="material-symbols-outlined filled text-primary">person</span>
+                )}
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">{session.user.name}</p>
+                    <p className="text-xs leading-none text-muted-foreground">{session.user.email}</p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>
+                  <Link href="/profile" className="w-full">Profile</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <Link href="/settings" className="w-full">Settings</Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="text-red-600 focus:text-red-600 cursor-pointer" onSelect={(e) => { e.preventDefault(); signOut(); }}>
+                  Log out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Button asChild variant="default" size="sm" className="rounded-full px-6">
+              <Link href="/sign-in">Sign In</Link>
+            </Button>
+          )}
+        </div>
+      </div>
+    </nav>
+  );
+}

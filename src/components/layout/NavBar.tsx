@@ -9,12 +9,14 @@ import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Search } from 'lucide-react';
 
 export function NavBar() {
   const pathname = usePathname();
@@ -50,9 +52,7 @@ export function NavBar() {
         </div>
         <div className="flex items-center gap-4">
           <div className="relative hidden md:block">
-            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">
-              search
-            </span>
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <input
               className="pl-10 pr-4 py-2 rounded-[16px] border border-surface-variant bg-surface-bright focus:ring-1 focus:ring-primary focus:border-primary outline-none font-body-md text-body-md w-64"
               placeholder="Search..."
@@ -72,12 +72,14 @@ export function NavBar() {
                 )}
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>
-                  <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">{session.user.name}</p>
-                    <p className="text-xs leading-none text-muted-foreground">{session.user.email}</p>
-                  </div>
-                </DropdownMenuLabel>
+                <DropdownMenuGroup>
+                  <DropdownMenuLabel>
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">{session.user.name}</p>
+                      <p className="text-xs leading-none text-muted-foreground">{session.user.email}</p>
+                    </div>
+                  </DropdownMenuLabel>
+                </DropdownMenuGroup>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>
                   <Link href="/profile" className="w-full">Profile</Link>
@@ -86,7 +88,7 @@ export function NavBar() {
                   <Link href="/settings" className="w-full">Settings</Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-red-600 focus:text-red-600 cursor-pointer" onSelect={(e) => { e.preventDefault(); signOut(); }}>
+                <DropdownMenuItem className="text-red-600 focus:text-red-600 cursor-pointer" onClick={() => signOut()}>
                   Log out
                 </DropdownMenuItem>
               </DropdownMenuContent>

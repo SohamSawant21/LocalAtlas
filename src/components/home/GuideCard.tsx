@@ -23,7 +23,7 @@ interface GuideCardProps {
 
 export function GuideCard({ user }: GuideCardProps) {
   return (
-    <Link href={`/guides/${user.id}`}>
+    <Link href={`/profile/${user.id}`}>
       <Card className="group bg-card border-border hover:border-primary/30 transition-all duration-300 hover:shadow-lg rounded-2xl overflow-hidden cursor-pointer h-full">
         <CardContent className="p-6">
           <div className="flex flex-col items-center text-center">

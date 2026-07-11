@@ -7,14 +7,15 @@ import {
   Utensils 
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 const categories = [
-  { name: 'Beaches', icon: Waves },
-  { name: 'Waterfalls', icon: Palmtree },
-  { name: 'Trekking', icon: Mountain },
-  { name: 'Camping', icon: Tent },
-  { name: 'Viewpoints', icon: Camera },
-  { name: 'Local Food', icon: Utensils },
+  { name: 'Beaches', icon: Waves, category: 'BEACH' },
+  { name: 'Waterfalls', icon: Palmtree, category: 'WATERFALL' },
+  { name: 'Trekking', icon: Mountain, category: 'TRAIL' },
+  { name: 'Camping', icon: Tent, category: 'OTHER' },
+  { name: 'Viewpoints', icon: Camera, category: 'VIEWPOINT' },
+  { name: 'Local Food', icon: Utensils, category: 'EATERY' },
 ];
 
 export function CategoryFilters() {
@@ -29,9 +30,12 @@ export function CategoryFilters() {
                 key={category.name} 
                 variant="outline" 
                 className="rounded-full h-12 px-6 gap-2 hover:border-primary hover:text-primary transition-colors bg-card"
+                asChild
               >
-                <Icon className="w-5 h-5" />
-                <span className="font-medium text-sm">{category.name}</span>
+                <Link href={`/explore?category=${category.category}`}>
+                  <Icon className="w-5 h-5" />
+                  <span className="font-medium text-sm">{category.name}</span>
+                </Link>
               </Button>
             );
           })}

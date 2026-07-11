@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { LocationData } from '@/types';
 import { GemCard } from '@/components/shared/GemCard';
 import { Input } from '@/components/ui/input';
@@ -11,14 +11,32 @@ import Link from 'next/link';
 import { District, LocationCategory, CrowdLevel } from '@/types';
 
 const DISTRICTS: District[] = ['SINDHUDURG', 'RATNAGIRI', 'RAIGAD'];
-const CATEGORIES: LocationCategory[] = ['BEACH', 'WATERFALL', 'FORT', 'TEMPLE', 'VIEWPOINT', 'OTHER'];
+const CATEGORIES: LocationCategory[] = ['BEACH', 'WATERFALL', 'FORT', 'TEMPLE', 'VIEWPOINT', 'TRAIL', 'EATERY', 'OTHER'];
 const CROWD_LEVELS: CrowdLevel[] = ['VERY_LOW', 'LOW', 'MEDIUM', 'HIGH'];
 
+import { useSearchParams } from 'next/navigation';
+
 export function ExploreClient({ locations }: { locations: LocationData[] }) {
+  const searchParams = useSearchParams();
+  
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDistrict, setSelectedDistrict] = useState<District | 'ALL'>('ALL');
   const [selectedCategory, setSelectedCategory] = useState<LocationCategory | 'ALL'>('ALL');
   const [selectedCrowd, setSelectedCrowd] = useState<CrowdLevel | 'ALL'>('ALL');
+
+  useEffect(() => {
+    if (searchParams) {
+      const query = searchParams.get('query');
+      if (query !== null) {
+        setSearchQuery(query);
+      }
+      
+      const category = searchParams.get('category');
+      if (category && CATEGORIES.includes(category as LocationCategory)) {
+        setSelectedCategory(category as LocationCategory);
+      }
+    }
+  }, [searchParams]);
 
   const filteredLocations = locations.filter(loc => {
     const matchesSearch = loc.name.toLowerCase().includes(searchQuery.toLowerCase()) || 

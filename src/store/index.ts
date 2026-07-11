@@ -53,11 +53,20 @@ interface MapState {
   selectedLocationId: string | null;
   isDrawerOpen: boolean;
   mapStyle: 'terrain' | 'satellite';
+  filters: SearchFilters;
+  visibleBounds: [[number, number], [number, number]] | null;
+  currentLocation: [number, number] | null;
+  routeLocationIds: string[];
   setCenter: (center: [number, number]) => void;
   setZoom: (zoom: number) => void;
   selectLocation: (id: string | null) => void;
   setDrawerOpen: (open: boolean) => void;
   setMapStyle: (style: 'terrain' | 'satellite') => void;
+  setFilters: (filters: Partial<SearchFilters>) => void;
+  setVisibleBounds: (bounds: [[number, number], [number, number]] | null) => void;
+  setCurrentLocation: (location: [number, number] | null) => void;
+  toggleRouteLocation: (id: string) => void;
+  clearRoute: () => void;
 }
 
 export const useMapStore = create<MapState>((set) => ({
@@ -66,10 +75,24 @@ export const useMapStore = create<MapState>((set) => ({
   selectedLocationId: null,
   isDrawerOpen: false,
   mapStyle: 'terrain',
+  filters: {},
+  visibleBounds: null,
+  currentLocation: null,
+  routeLocationIds: [],
   setCenter: (center) => set({ center }),
   setZoom: (zoom) => set({ zoom }),
   selectLocation: (selectedLocationId) =>
     set({ selectedLocationId, isDrawerOpen: !!selectedLocationId }),
   setDrawerOpen: (isDrawerOpen) => set({ isDrawerOpen }),
   setMapStyle: (mapStyle) => set({ mapStyle }),
+  setFilters: (filters) => set((state) => ({ filters: { ...state.filters, ...filters } })),
+  setVisibleBounds: (visibleBounds) => set({ visibleBounds }),
+  setCurrentLocation: (currentLocation) => set({ currentLocation }),
+  toggleRouteLocation: (id) => set((state) => {
+    const routeLocationIds = state.routeLocationIds.includes(id) 
+      ? state.routeLocationIds.filter(locId => locId !== id)
+      : [...state.routeLocationIds, id];
+    return { routeLocationIds };
+  }),
+  clearRoute: () => set({ routeLocationIds: [] })
 }));

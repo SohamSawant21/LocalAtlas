@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useMemo } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents, ZoomControl, Polyline } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents, ZoomControl, Polyline, GeoJSON } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import 'leaflet/dist/leaflet.css';
 import { LocationData } from '@/types';
@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import L from 'leaflet';
 import { MapControls } from './MapControls';
+import konkanData from '@/constants/konkan.json';
 
 // Sub-component to handle map events and sync with Zustand
 function MapEvents() {
@@ -169,7 +170,9 @@ export default function InteractiveMap({ locations }: InteractiveMapProps) {
         ref={setMap}
         center={center} 
         zoom={zoom} 
-
+        maxBounds={L.latLngBounds([15.4, 72.5], [19.3, 74.5])}
+        maxBoundsViscosity={1.0}
+        minZoom={7}
         className="w-full h-full z-0"
         zoomControl={false} // Custom control
         scrollWheelZoom={true}
@@ -179,6 +182,15 @@ export default function InteractiveMap({ locations }: InteractiveMapProps) {
         <TileLayer
           attribution={tileAttribution}
           url={tileUrl}
+        />
+        
+        <GeoJSON 
+          data={konkanData as any} 
+          style={{
+            color: 'hsl(var(--primary))',
+            weight: 3,
+            fillOpacity: 0.05,
+          }} 
         />
         
         <ZoomControl position="topright" />

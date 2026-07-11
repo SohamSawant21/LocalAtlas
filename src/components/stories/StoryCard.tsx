@@ -44,12 +44,12 @@ export function StoryCard({ story, featured = false }: StoryCardProps) {
   };
 
   return (
-    <Card className={`overflow-hidden group hover:shadow-xl transition-all duration-300 border-border/50 bg-card ${featured ? 'md:col-span-2 md:flex' : 'flex flex-col'}`}>
-      <div className={`relative overflow-hidden ${featured ? 'md:w-1/2 shrink-0' : 'w-full aspect-[4/3]'}`}>
+    <Card className={`overflow-hidden group hover:shadow-xl transition-all duration-300 border-border/50 bg-card ${featured ? 'md:col-span-2 md:flex-row' : ''}`}>
+      <div className={`relative overflow-hidden shrink-0 w-full aspect-[4/3] ${featured ? 'md:w-1/2 md:aspect-auto md:min-h-[300px]' : ''}`}>
         <img
           src={story.coverImage}
           alt={story.title}
-          className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
+          className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       </div>

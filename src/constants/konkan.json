@@ -1,0 +1,47 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Konkan Region",
+        "description": "Simplified bounding polygon for Raigad, Ratnagiri, and Sindhudurg"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              72.8,
+              19.1
+            ],
+            [
+              73.6,
+              19.1
+            ],
+            [
+              73.8,
+              17.5
+            ],
+            [
+              74.2,
+              15.6
+            ],
+            [
+              73.5,
+              15.6
+            ],
+            [
+              73.1,
+              17.5
+            ],
+            [
+              72.8,
+              19.1
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

@@ -38,3 +38,21 @@ export const getUserProfile = unstable_cache(async (id: string) => {
     return null;
   }
 }, ['user-profile'], { revalidate: 3600, tags: ['user'] });
+
+export const getIsFollowing = async (followerId: string, followingId: string) => {
+  if (!followerId || !followingId) return false;
+  try {
+    const follow = await prisma.follow.findUnique({
+      where: {
+        followerId_followingId: {
+          followerId,
+          followingId
+        }
+      }
+    });
+    return !!follow;
+  } catch (error) {
+    console.error('Failed to check follow status:', error);
+    return false;
+  }
+};

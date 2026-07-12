@@ -29,7 +29,7 @@ export default function SignInPage() {
 
   return (
     <AuthLayout
-      image="https://images.unsplash.com/photo-1590130638515-560416b7ff6c?q=80&w=2000&auto=format&fit=crop"
+      image="/konkan_hero_bg.jpg"
       title="Welcome back to the untouched trails."
       description="Sign in to continue exploring verified hidden gems and connecting with local experts."
     >

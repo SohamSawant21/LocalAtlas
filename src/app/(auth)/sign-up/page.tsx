@@ -29,7 +29,7 @@ export default function SignUpPage() {
 
   return (
     <AuthLayout
-      image="https://images.unsplash.com/photo-1542385151-efd9000785a0?q=80&w=2000&auto=format&fit=crop"
+      image="/konkan_hero_bg.jpg"
       title="Join the community of explorers."
       description="Create an account to save your favorite spots, review places, and become a local guide."
     >

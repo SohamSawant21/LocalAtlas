@@ -16,7 +16,18 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Search } from 'lucide-react';
+import { Search, Home, Compass, Map as MapIcon, Users, BookOpen } from 'lucide-react';
+
+const getNavIcon = (label: string) => {
+  switch (label.toLowerCase()) {
+    case 'home': return <Home className="w-4 h-4" />;
+    case 'explore': return <Compass className="w-4 h-4" />;
+    case 'map': return <MapIcon className="w-4 h-4" />;
+    case 'community': return <Users className="w-4 h-4" />;
+    case 'stories': return <BookOpen className="w-4 h-4" />;
+    default: return null;
+  }
+};
 
 export function NavBar() {
   const pathname = usePathname();
@@ -27,24 +38,31 @@ export function NavBar() {
       <div className="flex justify-between items-center w-full px-margin-desktop py-4 max-w-container-max mx-auto md:px-margin-desktop px-margin-mobile">
         <Link
           href="/"
-          className="text-headline-md font-headline-md font-bold text-primary dark:text-primary-fixed"
+          className="text-2xl md:text-3xl font-extrabold tracking-tight text-primary dark:text-primary-fixed hover:opacity-90 transition-opacity flex items-center"
         >
           LocalAtlas
         </Link>
-        <div className="hidden md:flex gap-6 items-center">
+        <div className="hidden md:flex items-center space-x-1 p-1 bg-muted/50 rounded-full border border-border/50">
           {NAV_LINKS.map((link) => {
             const isActive = pathname === link.href;
+            
             return (
               <Link
                 key={link.href}
                 href={link.href}
                 className={cn(
-                  'transition-colors hover:bg-surface-variant/50 dark:hover:bg-surface-variant/20 rounded-lg px-3 py-2 font-label-md text-label-md',
+                  'relative flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ease-out group',
                   isActive
-                    ? 'text-primary dark:text-primary-fixed font-bold border-b-2 border-primary dark:border-primary-fixed pb-1'
-                    : 'text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary-fixed'
+                    ? 'text-primary bg-background shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
                 )}
               >
+                <span className={cn(
+                  "transition-colors duration-300",
+                  isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
+                )}>
+                  {getNavIcon(link.label)}
+                </span>
                 {link.label}
               </Link>
             );

@@ -78,22 +78,35 @@ export default async function HomePage() {
       </section>
       
       {/* Call to Action */}
-      <section className="py-24 px-4 relative overflow-hidden">
-        <div className="absolute inset-0 bg-primary/10"></div>
-        <div className="container mx-auto relative z-10 text-center max-w-3xl">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">
-            Know a secret spot?
-          </h2>
-          <p className="text-xl text-muted-foreground mb-10">
-            Join the LocalAtlas community, share your hidden gems, and build your reputation as a top local guide.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="rounded-full text-base h-14 px-8" asChild>
-              <Link href="/sign-up">Become a Guide</Link>
-            </Button>
-            <Button size="lg" variant="outline" className="rounded-full text-base h-14 px-8 bg-background" asChild>
-              <Link href="/contribute">Submit a Location</Link>
-            </Button>
+      <section className="py-12 md:py-24 px-4">
+        <div className="container mx-auto relative rounded-[2.5rem] overflow-hidden shadow-2xl">
+          {/* Background Image */}
+          <div 
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-1000 hover:scale-105"
+            style={{ backgroundImage: 'url(/images/konkan_hidden_gem.jpg)' }}
+          >
+            {/* Overlay to ensure text readability */}
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px] bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+          </div>
+          
+          <div className="relative z-10 text-center max-w-4xl mx-auto py-20 px-6 md:px-12 md:py-32 flex flex-col items-center justify-center min-h-[400px]">
+            <span className="inline-block px-5 py-2 rounded-full bg-white/20 text-white backdrop-blur-md text-xs md:text-sm font-bold tracking-widest uppercase mb-6 shadow-sm border border-white/30">
+              Join the Movement
+            </span>
+            <h2 className="text-4xl md:text-6xl font-extrabold mb-6 text-white drop-shadow-xl leading-tight tracking-tight">
+              Know a Secret Spot?
+            </h2>
+            <p className="text-lg md:text-2xl text-white/90 mb-10 max-w-2xl mx-auto drop-shadow-md font-medium leading-relaxed">
+              Join the LocalAtlas community, share your hidden gems, and build your reputation as a top local guide in the Konkan region.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center w-full sm:w-auto">
+              <Button size="lg" className="w-full sm:w-auto rounded-full text-base h-14 px-10 bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-xl hover:shadow-primary/30 transition-all duration-300 hover:-translate-y-1" asChild>
+                <Link href="/sign-up">Become a Guide</Link>
+              </Button>
+              <Button size="lg" variant="outline" className="w-full sm:w-auto rounded-full text-base h-14 px-10 bg-white/10 hover:bg-white/20 text-white border-white/40 backdrop-blur-sm font-bold shadow-xl transition-all duration-300 hover:-translate-y-1" asChild>
+                <Link href="/contribute">Submit a Location</Link>
+              </Button>
+            </div>
           </div>
         </div>
       </section>

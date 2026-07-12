@@ -4,13 +4,16 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MapPin, Trophy, Navigation, Settings, Grid, Bookmark, Award, Calendar } from 'lucide-react';
 import { GemCard } from '@/components/shared/GemCard';
+import { FollowButton } from '@/components/profile/FollowButton';
 
 interface ProfileViewProps {
   user: User;
   locations: LocationData[];
+  currentUserId?: string | null;
+  isFollowing?: boolean;
 }
 
-export function ProfileView({ user, locations }: ProfileViewProps) {
+export function ProfileView({ user, locations, currentUserId, isFollowing = false }: ProfileViewProps) {
   const joinDate = user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'Unknown';
 
   return (
@@ -43,10 +46,14 @@ export function ProfileView({ user, locations }: ProfileViewProps) {
             </div>
             
             <div className="flex justify-center md:justify-end gap-3">
-              <Button>Follow</Button>
-              <Button variant="outline" size="icon">
-                <Settings className="w-4 h-4" />
-              </Button>
+              {currentUserId !== user.id && (
+                <FollowButton targetUserId={user.id} initialIsFollowing={isFollowing} />
+              )}
+              {currentUserId === user.id && (
+                <Button variant="outline" size="icon">
+                  <Settings className="w-4 h-4" />
+                </Button>
+              )}
             </div>
           </div>
 

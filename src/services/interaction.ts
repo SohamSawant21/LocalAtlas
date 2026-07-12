@@ -67,7 +67,12 @@ export async function toggleFollowUser(followerId: string, followingId: string) 
 
   if (existingFollow) {
     await prisma.follow.delete({
-      where: { id: existingFollow.id },
+      where: {
+        followerId_followingId: {
+          followerId,
+          followingId,
+        },
+      },
     });
     return { following: false };
   } else {

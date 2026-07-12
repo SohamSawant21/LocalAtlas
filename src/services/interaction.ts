@@ -1,22 +1,36 @@
 import prisma from '@/lib/prisma';
 import { createNotification } from './notification';
+import { recalculateUserReputation } from './reputation';
 
 export async function toggleSavePlace(userId: string, locationId: string) {
   const existingSave = await prisma.savedPlace.findFirst({
     where: { userId, locationId },
   });
 
+  let saved = false;
+
   if (existingSave) {
     await prisma.savedPlace.delete({
       where: { id: existingSave.id },
     });
-    return { saved: false };
+    saved = false;
   } else {
     await prisma.savedPlace.create({
       data: { userId, locationId },
     });
-    return { saved: true };
+    saved = true;
   }
+
+  // Recalculate contributor's reputation
+  const location = await prisma.location.findUnique({
+    where: { id: locationId },
+    select: { userId: true }
+  });
+  if (location?.userId) {
+    await recalculateUserReputation(location.userId);
+  }
+
+  return { saved };
 }
 
 export async function toggleLikeStory(userId: string, storyId: string) {
@@ -74,6 +88,7 @@ export async function toggleFollowUser(followerId: string, followingId: string) 
         },
       },
     });
+    await recalculateUserReputation(followingId);
     return { following: false };
   } else {
     await prisma.$transaction(async (tx) => {
@@ -92,6 +107,7 @@ export async function toggleFollowUser(followerId: string, followingId: string) 
       });
     });
 
+    await recalculateUserReputation(followingId);
     return { following: true };
   }
 }

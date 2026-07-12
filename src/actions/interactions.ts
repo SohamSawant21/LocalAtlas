@@ -4,7 +4,7 @@ import { auth } from '@/auth';
 import { z } from 'zod';
 import { toggleSavePlace, toggleFollowUser, toggleLikeStory } from '@/services/interaction';
 import { ActionResponse } from '@/types';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, updateTag } from 'next/cache';
 
 const savePlaceSchema = z.object({
   locationId: z.string().min(1),
@@ -25,6 +25,9 @@ export async function toggleSaveAction(locationId: string): Promise<ActionRespon
     const result = await toggleSavePlace(session.user.id, parsed.data.locationId);
     revalidatePath('/saved');
     revalidatePath(`/location/[slug]`, 'page');
+    revalidatePath('/profile');
+    revalidatePath(`/profile/[id]`, 'page');
+    updateTag('user');
     
     return { success: true, data: result };
   } catch (error: any) {

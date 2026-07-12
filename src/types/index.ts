@@ -54,6 +54,7 @@ export interface LocationData {
   images: string[];
   userId: string;
   contributor?: User;
+  reviews?: ReviewData[];
   createdAt: Date;
   updatedAt: Date;
 }

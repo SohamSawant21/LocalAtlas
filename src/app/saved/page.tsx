@@ -36,14 +36,14 @@ export default async function SavedPlacesPage() {
             Your curated collection of hidden gems. Plan your next adventure from here.
           </p>
         </div>
-        <div className="w-full md:w-auto flex gap-2">
-          <Input placeholder="Search saved places..." className="w-full md:w-[250px]" />
-          <Button variant="outline">Filter</Button>
+        <div className="w-full md:w-auto flex gap-2" title="Filtering coming soon">
+          <Input placeholder="Search saved places..." className="w-full md:w-[250px]" disabled />
+          <Button variant="outline" disabled>Filter</Button>
         </div>
       </div>
       
       <div className="mt-8 border-t pt-8">
-        <SavedPlacesList locations={locations as any} />
+        <SavedPlacesList locations={locations as any} isAuthenticated={!!session?.user} />
       </div>
     </div>
   );

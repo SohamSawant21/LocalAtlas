@@ -26,6 +26,7 @@ export const getUserProfile = unstable_cache(async (id: string) => {
       include: {
         locations: true,
         stories: true,
+        savedPlaces: { include: { location: true } },
         userBadges: { include: { badge: true } },
         _count: {
           select: { followers: true, following: true, savedPlaces: true, locations: true }

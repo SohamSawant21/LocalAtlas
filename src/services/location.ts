@@ -2,6 +2,7 @@ import prisma from '@/lib/prisma';
 import { LocationData } from '@/types';
 import { LocationCategory, LocationStatus } from '@prisma/client';
 import { unstable_cache } from 'next/cache';
+import { recalculateUserReputation } from './reputation';
 
 export const getLocations = unstable_cache(async (params?: { category?: string; limit?: number }) => {
   try {
@@ -73,12 +74,10 @@ export async function updateLocationStatus(locationId: string, status: LocationS
           locationId,
         }
       });
-      
-      // Update reputation
-      await tx.user.update({
-        where: { id: loc.userId },
-        data: { reputation: { increment: 10 } }
-      });
+    }
+
+    if ((status === 'APPROVED' || status === 'REJECTED') && loc.userId) {
+      await recalculateUserReputation(loc.userId, tx as any);
     }
 
     return loc;

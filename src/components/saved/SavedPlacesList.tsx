@@ -6,8 +6,10 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription }
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { MapPin, Heart, ExternalLink, MoreVertical } from 'lucide-react';
+import { SaveButton } from '@/components/location/SaveButton';
+import Link from 'next/link';
 
-export function SavedPlacesList({ locations }: { locations: any[] }) {
+export function SavedPlacesList({ locations, isAuthenticated = true }: { locations: any[], isAuthenticated?: boolean }) {
   if (locations.length === 0) {
     return (
       <div className="py-20 text-center flex flex-col items-center">
@@ -30,9 +32,7 @@ export function SavedPlacesList({ locations }: { locations: any[] }) {
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             />
             <div className="absolute top-3 right-3 flex gap-2">
-              <Button size="icon" variant="secondary" className="h-8 w-8 rounded-full opacity-90 hover:opacity-100 hover:text-red-500">
-                <Heart className="h-4 w-4 fill-red-500 text-red-500" />
-              </Button>
+              <SaveButton locationId={location.id} initialSaved={true} variant="icon" isAuthenticated={isAuthenticated} />
             </div>
             <Badge className="absolute top-3 left-3 bg-background/80 text-foreground backdrop-blur-sm hover:bg-background/90">
               {location.category}
@@ -41,7 +41,9 @@ export function SavedPlacesList({ locations }: { locations: any[] }) {
           <CardHeader className="p-4 pb-2">
             <div className="flex justify-between items-start">
               <div>
-                <CardTitle className="line-clamp-1">{location.name}</CardTitle>
+                <Link href={`/location/${location.slug}`} className="hover:underline">
+                  <CardTitle className="line-clamp-1">{location.name}</CardTitle>
+                </Link>
                 <CardDescription className="flex items-center gap-1 mt-1 text-xs">
                   <MapPin className="h-3 w-3" />
                   {location.district}
@@ -67,8 +69,10 @@ export function SavedPlacesList({ locations }: { locations: any[] }) {
               <div className="text-xs font-medium bg-primary/10 text-primary px-2 py-1 rounded-md">
                 Score: {location.hiddenScore}
               </div>
-              <Button variant="ghost" size="sm" className="gap-1 h-8 text-xs">
-                View Details <ExternalLink className="h-3 w-3" />
+              <Button variant="ghost" size="sm" className="gap-1 h-8 text-xs" asChild>
+                <Link href={`/location/${location.slug}`}>
+                  View Details <ExternalLink className="h-3 w-3" />
+                </Link>
               </Button>
             </div>
           </CardFooter>

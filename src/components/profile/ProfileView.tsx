@@ -134,13 +134,21 @@ export function ProfileView({ user, locations, currentUserId, isFollowing = fals
         </TabsContent>
 
         <TabsContent value="saved" className="mt-6">
-          <div className="text-center py-16 bg-muted/20 rounded-2xl border border-dashed">
-            <Bookmark className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-            <h3 className="text-lg font-medium">No saved places</h3>
-            <p className="text-muted-foreground text-sm mt-1">
-              Start saving hidden gems you want to visit later.
-            </p>
-          </div>
+          {(user as any).savedPlaces && (user as any).savedPlaces.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {(user as any).savedPlaces.map((sp: any) => (
+                <GemCard key={sp.location.id} location={sp.location} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-16 bg-muted/20 rounded-2xl border border-dashed">
+              <Bookmark className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
+              <h3 className="text-lg font-medium">No saved places</h3>
+              <p className="text-muted-foreground text-sm mt-1">
+                Start saving hidden gems you want to visit later.
+              </p>
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="badges" className="mt-6">

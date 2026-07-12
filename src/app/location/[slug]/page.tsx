@@ -1,5 +1,9 @@
 import { notFound } from 'next/navigation';
+import { auth } from '@/auth';
 import { getLocationBySlug } from '@/services/location';
+import { ReviewSection } from '@/components/location/ReviewSection';
+import { SaveButton } from '@/components/location/SaveButton';
+import prisma from '@/lib/prisma';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -15,10 +19,17 @@ export default async function LocationPage({ params }: LocationPageProps) {
   const resolvedParams = await params;
   const { slug } = resolvedParams;
   const location = await getLocationBySlug(slug);
+  const session = await auth();
 
   if (!location) {
     notFound();
   }
+
+  const isSaved = session?.user?.id 
+    ? await prisma.savedPlace.findFirst({
+        where: { userId: session.user.id, locationId: location.id }
+      }) !== null
+    : false;
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-12 max-w-7xl">
@@ -123,12 +134,11 @@ export default async function LocationPage({ params }: LocationPageProps) {
             </TabsContent>
             
             <TabsContent value="reviews">
-              <div className="text-center py-12 bg-muted/20 rounded-2xl border border-dashed">
-                <Star className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-                <h3 className="text-lg font-medium">No reviews yet</h3>
-                <p className="text-muted-foreground text-sm mt-1">Be the first to share your experience!</p>
-                <Button className="mt-4" variant="outline">Write a Review</Button>
-              </div>
+              <ReviewSection 
+                locationId={location.id} 
+                reviews={location.reviews as any || []} 
+                isAuthenticated={!!session?.user} 
+              />
             </TabsContent>
             
             <TabsContent value="tips">
@@ -168,10 +178,11 @@ export default async function LocationPage({ params }: LocationPageProps) {
                 Get Directions
               </Button>
               <div className="grid grid-cols-2 gap-3">
-                <Button variant="outline" className="w-full rounded-xl">
-                  <Bookmark className="w-4 h-4 mr-2" />
-                  Save
-                </Button>
+                <SaveButton 
+                  locationId={location.id} 
+                  initialSaved={isSaved} 
+                  isAuthenticated={!!session?.user} 
+                />
                 <Button variant="outline" className="w-full rounded-xl">
                   <CheckCircle className="w-4 h-4 mr-2" />
                   Check-in

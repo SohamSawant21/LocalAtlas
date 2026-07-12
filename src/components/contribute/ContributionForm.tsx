@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { ContributionFormData, District, LocationCategory, Difficulty, CrowdLevel, RoadCondition, Season } from '@/types';
 import { UploadCloud, CheckCircle2, MapPin, Map, Loader2 } from 'lucide-react';
 import { submitContributionAction } from '@/actions/locations';
+import { getPresignedUrlAction } from '@/actions/storage';
 import { toast } from 'sonner';
 
 const STEPS = ['Basic Details', 'Location & Features', 'Media Upload', 'Review'];
@@ -52,6 +53,38 @@ export function ContributionForm() {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
+      const publicUrls: string[] = [];
+
+      if (formData.images && formData.images.length > 0) {
+        for (const file of formData.images) {
+          const presignedRes = await getPresignedUrlAction({
+            fileType: file.type,
+            fileSize: file.size,
+            folder: 'locations',
+          });
+
+          if (!presignedRes.success || !presignedRes.data) {
+            throw new Error(`Failed to get upload URL for ${file.name}`);
+          }
+
+          const { presignedUrl, publicUrl } = presignedRes.data;
+
+          const uploadRes = await fetch(presignedUrl, {
+            method: 'PUT',
+            body: file,
+            headers: {
+              'Content-Type': file.type,
+            },
+          });
+
+          if (!uploadRes.ok) {
+            throw new Error(`Upload failed for ${file.name}`);
+          }
+
+          publicUrls.push(publicUrl);
+        }
+      }
+
       const response = await submitContributionAction({
         name: formData.name || '',
         district: formData.district || 'SINDHUDURG',
@@ -63,7 +96,7 @@ export function ContributionForm() {
         crowdLevel: formData.crowdLevel || 'LOW',
         roadCondition: formData.roadCondition || 'GOOD',
         bestSeason: formData.bestSeason || 'ALL_YEAR',
-        // Omit images for now since we don't have S3 integration yet
+        images: publicUrls,
       });
 
       if (response.success) {
@@ -76,8 +109,8 @@ export function ContributionForm() {
       } else {
         toast.error(response.error?.message || 'Failed to submit.');
       }
-    } catch (e) {
-      toast.error('An unexpected error occurred.');
+    } catch (e: any) {
+      toast.error(e.message || 'An unexpected error occurred.');
     } finally {
       setIsSubmitting(false);
     }
@@ -245,9 +278,25 @@ export function ContributionForm() {
               <h3 className="font-semibold mb-1">Upload Images</h3>
               <p className="text-sm text-muted-foreground mb-4">Drag and drop your high-quality images here</p>
               <div className="relative">
-                <Input type="file" multiple accept="image/*" className="absolute inset-0 opacity-0 cursor-pointer" onChange={(e) => {
+                <Input type="file" multiple accept="image/jpeg,image/png,image/webp" className="absolute inset-0 opacity-0 cursor-pointer" onChange={(e) => {
                   if (e.target.files) {
-                    updateFormData({ images: Array.from(e.target.files) });
+                    const files = Array.from(e.target.files);
+                    const validMimes = ['image/jpeg', 'image/png', 'image/webp'];
+                    const maxSize = 5 * 1024 * 1024; // 5MB
+                    const maxImages = 5;
+
+                    const validFiles = files.filter(f => validMimes.includes(f.type) && f.size <= maxSize);
+                    if (validFiles.length !== files.length) {
+                      toast.error("Some files were skipped. Only JPEG, PNG, and WEBP under 5MB are allowed.");
+                    }
+                    
+                    let newImages = validFiles;
+                    if (newImages.length > maxImages) {
+                      toast.error(`Maximum ${maxImages} images allowed.`);
+                      newImages = newImages.slice(0, maxImages);
+                    }
+                    
+                    updateFormData({ images: newImages });
                   }
                 }} />
                 <Button variant="secondary">Select Files</Button>

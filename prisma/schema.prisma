@@ -101,6 +101,12 @@ model User {
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
+  // Settings
+  emailNotifications Boolean  @default(true)
+  pushNotifications  Boolean  @default(false)
+  locationTracking   Boolean  @default(true)
+  publicProfile      Boolean  @default(true)
+
   accounts       Account[]
   sessions       Session[]
   locations      Location[]    @relation("contributor")

@@ -68,10 +68,25 @@ export const authConfig = {
       if (user) {
         token.id = user.id;
         token.role = user.role;
-        token.image = (user as any).avatar;
+        
+        const avatar = (user as any).avatar;
+        if (avatar && avatar.startsWith('data:image')) {
+          token.image = `/api/avatar/${user.id}`;
+        } else {
+          token.image = avatar;
+        }
       }
       if (trigger === 'update' && session) {
-        token = { ...token, ...session };
+        if (session.image && session.image.startsWith('data:image')) {
+          token.image = `/api/avatar/${token.id}`;
+        } else if (session.image === null) {
+          token.image = undefined;
+        } else if (session.image) {
+          token.image = session.image;
+        }
+        
+        // Merge the rest of the session if there's any other fields like name
+        if (session.name) token.name = session.name;
       }
       return token;
     },

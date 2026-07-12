@@ -2,9 +2,9 @@
 
 import { auth } from '@/auth';
 import { z } from 'zod';
-import { createLocation, updateLocationStatus } from '@/services/location';
+import { createLocation, updateLocationStatus, updateLocation } from '@/services/location';
 import { ActionResponse } from '@/types';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { LocationStatus } from '@prisma/client';
 
 const contributionSchema = z.object({
@@ -77,6 +77,51 @@ export async function updateLocationStatusAction(data: z.infer<typeof statusUpda
     
     revalidatePath(`/location/[slug]`, 'page');
     revalidatePath('/explore');
+    return { success: true, data: result };
+  } catch (error: any) {
+    return { success: false, error: { code: 'INTERNAL_ERROR', message: error.message } };
+  }
+}
+
+const editLocationSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(3).optional(),
+  district: z.enum(['SINDHUDURG', 'RATNAGIRI', 'RAIGAD']).optional(),
+  category: z.enum(['BEACH', 'WATERFALL', 'FORT', 'TEMPLE', 'TRAIL', 'VIEWPOINT', 'EATERY', 'HERITAGE', 'HOMESTAY', 'OTHER']).optional(),
+  description: z.string().min(20).optional(),
+  latitude: z.number().optional(),
+  longitude: z.number().optional(),
+  difficulty: z.enum(['EASY', 'MODERATE', 'HARD', 'EXPERT']).optional(),
+  crowdLevel: z.enum(['VERY_LOW', 'LOW', 'MEDIUM', 'HIGH', 'VERY_HIGH']).optional(),
+  roadCondition: z.enum(['EXCELLENT', 'GOOD', 'FAIR', 'POOR', 'OFFROAD']).optional(),
+  bestSeason: z.enum(['MONSOON', 'WINTER', 'SUMMER', 'ALL_YEAR']).optional(),
+  entryFee: z.string().optional(),
+  tags: z.array(z.string()).optional(),
+  images: z.array(z.string()).optional(),
+});
+
+export async function editLocationAction(data: z.infer<typeof editLocationSchema>): Promise<ActionResponse<any>> {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false, error: { code: 'UNAUTHORIZED', message: 'You must be logged in.' } };
+    }
+
+    const parsed = editLocationSchema.safeParse(data);
+    if (!parsed.success) {
+      return { success: false, error: { code: 'BAD_REQUEST', message: parsed.error.issues[0].message } };
+    }
+
+    const { id, ...updateData } = parsed.data;
+
+    const result = await updateLocation(id, session.user.id, updateData);
+
+    revalidatePath('/explore');
+    revalidatePath('/profile');
+    revalidatePath(`/location/${result.slug}`, 'page');
+    revalidateTag('locations');
+    revalidateTag('location');
+    
     return { success: true, data: result };
   } catch (error: any) {
     return { success: false, error: { code: 'INTERNAL_ERROR', message: error.message } };

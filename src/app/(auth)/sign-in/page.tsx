@@ -10,11 +10,9 @@ import Link from 'next/link';
 import { loginUser } from '@/actions/auth';
 import { signIn } from 'next-auth/react';
 import { toast } from 'sonner';
-import { useRouter } from 'next/navigation';
 
 export default function SignInPage() {
   const [state, formAction, isPending] = useActionState(loginUser, null);
-  const router = useRouter();
 
   useEffect(() => {
     if (state?.error) {
@@ -22,10 +20,9 @@ export default function SignInPage() {
     }
     if (state?.success) {
       toast.success('Logged in successfully!');
-      router.push('/explore');
-      router.refresh();
+      window.location.href = '/explore';
     }
-  }, [state, router]);
+  }, [state]);
 
   return (
     <AuthLayout

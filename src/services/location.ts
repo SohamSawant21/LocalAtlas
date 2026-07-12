@@ -55,6 +55,22 @@ export async function createLocation(data: Omit<LocationData, 'id' | 'createdAt'
   });
 }
 
+export async function updateLocation(locationId: string, userId: string, data: Partial<Omit<LocationData, 'id' | 'createdAt' | 'updatedAt' | 'slug' | 'verified' | 'verificationCount' | 'status' | 'userId'>>) {
+  // First ensure the user owns this location
+  const loc = await prisma.location.findUnique({ where: { id: locationId } });
+  if (!loc || loc.userId !== userId) {
+    throw new Error('Unauthorized or location not found');
+  }
+
+  return prisma.location.update({
+    where: { id: locationId },
+    data: {
+      ...data,
+      // If we need to preserve existing arrays or Enums we let prisma map them automatically
+    } as any
+  });
+}
+
 export async function updateLocationStatus(locationId: string, status: LocationStatus, actorId: string) {
   return prisma.$transaction(async (tx) => {
     const loc = await tx.location.update({

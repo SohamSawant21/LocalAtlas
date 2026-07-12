@@ -12,6 +12,7 @@ import { UploadCloud, CheckCircle2, MapPin, Map, Loader2 } from 'lucide-react';
 import { submitContributionAction } from '@/actions/locations';
 import { getPresignedUrlAction } from '@/actions/storage';
 import { toast } from 'sonner';
+import { LocationPickerMap } from '@/components/contribute/LocationPickerMap';
 
 const STEPS = ['Basic Details', 'Location & Features', 'Media Upload', 'Review'];
 
@@ -69,19 +70,30 @@ export function ContributionForm() {
 
           const { presignedUrl, publicUrl } = presignedRes.data;
 
-          const uploadRes = await fetch(presignedUrl, {
-            method: 'PUT',
-            body: file,
-            headers: {
-              'Content-Type': file.type,
-            },
-          });
+          try {
+            const uploadRes = await fetch(presignedUrl, {
+              method: 'PUT',
+              body: file,
+              headers: {
+                'Content-Type': file.type,
+              },
+            });
 
-          if (!uploadRes.ok) {
-            throw new Error(`Upload failed for ${file.name}`);
+            if (!uploadRes.ok) {
+              throw new Error(`Upload failed for ${file.name}`);
+            }
+            publicUrls.push(publicUrl);
+          } catch (uploadError: any) {
+            console.warn(`Failed to upload to S3, falling back to Base64: ${uploadError.message}`);
+            // Fallback to base64 string for local development without S3
+            const base64Url = await new Promise<string>((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onloadend = () => resolve(reader.result as string);
+              reader.onerror = reject;
+              reader.readAsDataURL(file);
+            });
+            publicUrls.push(base64Url);
           }
-
-          publicUrls.push(publicUrl);
         }
       }
 
@@ -200,21 +212,14 @@ export function ContributionForm() {
 
         {currentStep === 1 && (
           <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="lat">Latitude</Label>
-                <div className="relative">
-                  <MapPin className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input id="lat" type="number" className="pl-8" value={formData.latitude} onChange={(e) => updateFormData({ latitude: parseFloat(e.target.value) })} />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="lng">Longitude</Label>
-                <div className="relative">
-                  <Map className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input id="lng" type="number" className="pl-8" value={formData.longitude} onChange={(e) => updateFormData({ longitude: parseFloat(e.target.value) })} />
-                </div>
-              </div>
+            <div className="space-y-2 mb-6">
+              <Label>Select Location on Map</Label>
+              <LocationPickerMap
+                latitude={formData.latitude || 0}
+                longitude={formData.longitude || 0}
+                onChange={(lat, lng) => updateFormData({ latitude: lat, longitude: lng })}
+                category={formData.category}
+              />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">

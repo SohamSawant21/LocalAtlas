@@ -4,7 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MapPin, Trophy, Navigation, Settings, Grid, Bookmark, Award, Calendar } from 'lucide-react';
 import { GemCard } from '@/components/shared/GemCard';
+import { DiscoveriesList } from '@/components/profile/DiscoveriesList';
 import { FollowButton } from '@/components/profile/FollowButton';
+import Link from 'next/link';
 
 interface ProfileViewProps {
   user: User;
@@ -50,9 +52,11 @@ export function ProfileView({ user, locations, currentUserId, isFollowing = fals
                 <FollowButton targetUserId={user.id} initialIsFollowing={isFollowing} />
               )}
               {currentUserId === user.id && (
-                <Button variant="outline" size="icon">
-                  <Settings className="w-4 h-4" />
-                </Button>
+                <Link href="/settings">
+                  <Button variant="outline" size="icon">
+                    <Settings className="w-4 h-4" />
+                  </Button>
+                </Link>
               )}
             </div>
           </div>
@@ -116,21 +120,7 @@ export function ProfileView({ user, locations, currentUserId, isFollowing = fals
         </TabsList>
 
         <TabsContent value="discoveries" className="mt-6">
-          {locations.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {locations.map((loc) => (
-                <GemCard key={loc.id} location={loc} />
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-16 bg-muted/20 rounded-2xl border border-dashed">
-              <Navigation className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-              <h3 className="text-lg font-medium">No discoveries yet</h3>
-              <p className="text-muted-foreground text-sm mt-1">
-                When you discover and add new places, they&apos;ll show up here.
-              </p>
-            </div>
-          )}
+          <DiscoveriesList locations={locations} currentUserId={currentUserId} />
         </TabsContent>
 
         <TabsContent value="saved" className="mt-6">

@@ -25,13 +25,13 @@ const GithubIcon = ({ className }: { className?: string }) => (
 
 export function Footer() {
   return (
-    <footer className="relative bg-background text-muted-foreground overflow-hidden pt-20 pb-10 mt-20 md:pb-10 pb-24 border-t border-border">
+    <footer className="relative bg-background text-muted-foreground overflow-hidden pt-12 pb-6 mt-12 md:pb-6 pb-20 border-t border-border">
       {/* Subtle Background Pattern/Gradient */}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent to-muted/20 z-0"></div>
       <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent"></div>
       
       <div className="container relative z-10 mx-auto px-6 max-w-7xl">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           <div className="md:col-span-2 space-y-6">
             <Link
               href="/"
@@ -109,7 +109,7 @@ export function Footer() {
           </div>
         </div>
         
-        <div className="pt-8 border-t border-border flex justify-center md:justify-start items-center text-sm">
+        <div className="pt-6 border-t border-border flex justify-center md:justify-start items-center text-sm">
           <p className="flex items-center gap-1.5 text-center md:text-left">
             © {new Date().getFullYear()} LocalAtlas. Crafted with <Heart className="w-4 h-4 text-red-500 fill-red-500 animate-pulse mx-0.5" /> for the Konkan Coast.
           </p>

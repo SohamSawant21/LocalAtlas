@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { LocationData } from '@/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, Users, TrendingUp, Navigation, Loader2, Heart } from 'lucide-react';
+import { MapPin, Users, TrendingUp, Navigation, Loader2, Heart, Star } from 'lucide-react';
 import { useOptimistic, useTransition, useState } from 'react';
 import { toggleSaveAction } from '@/actions/interactions';
 import { toast } from 'sonner';
@@ -89,7 +89,7 @@ export function GemCard({ location, isEditable, onEditClick }: GemCardProps) {
               {location.name}
             </h3>
             <div className="flex items-center gap-1 bg-surface-container px-2 py-1 rounded-md">
-              <span className="material-symbols-outlined text-[14px] text-tertiary-container">star</span>
+              <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" />
               <span className="text-xs font-bold">{location.hiddenScore}</span>
             </div>
           </div>

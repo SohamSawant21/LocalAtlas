@@ -190,7 +190,7 @@ export default async function LocationPage({ params }: LocationPageProps) {
                   initialSaved={isSaved} 
                   isAuthenticated={!!session?.user} 
                 />
-                <ShareButton title={location.name} />
+                <ShareButton location={location} />
               </div>
             </div>
 

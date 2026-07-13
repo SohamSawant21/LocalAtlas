@@ -32,9 +32,9 @@ export const LocationShareCard = React.forwardRef<HTMLDivElement, LocationShareC
 
         {/* Content */}
         <div 
-          className="absolute bottom-0 left-0 right-0 p-10 h-[65%] flex flex-col justify-end"
+          className="absolute bottom-0 left-0 right-0 p-10 h-[70%] flex flex-col justify-end"
           style={{ 
-            background: 'linear-gradient(to top, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 1) 30%, rgba(255, 255, 255, 0.9) 65%, transparent 100%)' 
+            background: 'linear-gradient(to top, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 1) 60%, rgba(255, 255, 255, 0.85) 75%, rgba(255, 255, 255, 0.4) 90%, transparent 100%)' 
           }}
         >
           <div className="flex items-center space-x-2 mb-3">

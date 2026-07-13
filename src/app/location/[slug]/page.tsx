@@ -3,6 +3,7 @@ import { auth } from '@/auth';
 import { getLocationBySlug } from '@/services/location';
 import { ReviewSection } from '@/components/location/ReviewSection';
 import { SaveButton } from '@/components/location/SaveButton';
+import { ShareButton } from '@/components/location/ShareButton';
 import prisma from '@/lib/prisma';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -173,9 +174,15 @@ export default async function LocationPage({ params }: LocationPageProps) {
         <div className="lg:col-span-1">
           <div className="sticky top-24 bg-card border rounded-2xl p-6 shadow-sm">
             <div className="space-y-4">
-              <Button className="w-full text-base h-12 rounded-xl" size="lg">
-                <Navigation className="w-5 h-5 mr-2" />
-                Get Directions
+              <Button className="w-full text-base h-12 rounded-xl" size="lg" asChild>
+                <a 
+                  href={`https://www.google.com/maps/dir/?api=1&destination=${location.latitude},${location.longitude}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Navigation className="w-5 h-5 mr-2" />
+                  Get Directions
+                </a>
               </Button>
               <div className="grid grid-cols-2 gap-3">
                 <SaveButton 
@@ -183,15 +190,8 @@ export default async function LocationPage({ params }: LocationPageProps) {
                   initialSaved={isSaved} 
                   isAuthenticated={!!session?.user} 
                 />
-                <Button variant="outline" className="w-full rounded-xl">
-                  <CheckCircle className="w-4 h-4 mr-2" />
-                  Check-in
-                </Button>
+                <ShareButton title={location.name} />
               </div>
-              <Button variant="ghost" className="w-full text-muted-foreground rounded-xl">
-                <Share2 className="w-4 h-4 mr-2" />
-                Share
-              </Button>
             </div>
 
             <div className="mt-8 pt-8 border-t space-y-5">

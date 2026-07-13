@@ -45,7 +45,7 @@ export function GemCard({ location, isEditable, onEditClick }: GemCardProps) {
 
   return (
     <Link href={`/location/${location.slug}`}>
-      <Card className="group overflow-hidden rounded-2xl border-surface-variant bg-surface hover:shadow-lg transition-all duration-300">
+      <Card className="group overflow-hidden rounded-2xl border-surface-variant bg-surface hover:shadow-lg transition-all duration-300 p-0">
         <div className="relative h-48 w-full overflow-hidden">
           <Image
             src={location.images[0] || '/placeholder.jpg'}

@@ -10,8 +10,8 @@ interface GemCardProps {
 
 export function GemCard({ location }: GemCardProps) {
   return (
-    <Link href={`/gems/${location.slug}`}>
-      <Card className="group overflow-hidden bg-card border-border hover:border-primary/50 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 h-full cursor-pointer rounded-2xl">
+    <Link href={`/location/${location.slug}`}>
+      <Card className="group overflow-hidden bg-card border-border hover:border-primary/50 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 h-full cursor-pointer rounded-2xl p-0">
         <div className="relative h-56 overflow-hidden">
            {/* eslint-disable-next-line @next/next/no-img-element */}
           <img 

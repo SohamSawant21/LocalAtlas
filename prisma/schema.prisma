@@ -117,6 +117,7 @@ model User {
   stories        Story[]
   comments       Comment[]
   likes          Like[]
+  communityPosts CommunityPost[]
   notifications  Notification[] @relation("notificationRecipient")
   actedNotifications Notification[] @relation("notificationActor")
   achievements   Achievement[]
@@ -378,16 +379,19 @@ model UserBadge {
 model Comment {
   id         String   @id @default(cuid())
   content    String   @db.Text
-  locationId String
+  locationId String?
+  postId     String?
   userId     String
   parentId   String?
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  location Location  @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  location Location?  @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  post     CommunityPost? @relation(fields: [postId], references: [id], onDelete: Cascade)
   user     User      @relation(fields: [userId], references: [id])
   parent   Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
   replies  Comment[] @relation("CommentReplies")
+  likes    Like[]
 
   @@map("comments")
 }
@@ -398,13 +402,34 @@ model Like {
   locationId String?
   commentId  String?
   storyId    String?
+  postId     String?
   createdAt  DateTime @default(now())
 
   user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   location Location? @relation(fields: [locationId], references: [id])
   story    Story?    @relation(fields: [storyId], references: [id])
+  post     CommunityPost? @relation(fields: [postId], references: [id], onDelete: Cascade)
+  comment  Comment?  @relation(fields: [commentId], references: [id], onDelete: Cascade)
 
   @@map("likes")
+}
+
+model CommunityPost {
+  id        String   @id @default(cuid())
+  title     String
+  content   String   @db.Text
+  imageUrl  String?
+  userId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comments  Comment[]
+  likes     Like[]
+
+  @@index([createdAt])
+  @@index([userId])
+  @@map("community_posts")
 }
 
 model Verification {

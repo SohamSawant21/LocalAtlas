@@ -140,22 +140,16 @@ export default function SettingsClient({ user }: UserSettingsProps) {
 
       if (presignedRes.success && presignedRes.data) {
         const { presignedUrl, publicUrl } = presignedRes.data;
-        try {
-          const uploadRes = await fetch(presignedUrl, {
-            method: 'PUT',
-            body: file,
-            headers: { 'Content-Type': file.type },
-          });
+        const uploadRes = await fetch(presignedUrl, {
+          method: 'PUT',
+          body: file,
+          headers: { 'Content-Type': file.type },
+        });
 
-          if (!uploadRes.ok) throw new Error('S3 upload failed');
-          finalUrl = publicUrl;
-        } catch (s3Error) {
-          console.warn('S3 upload failed, falling back to Base64', s3Error);
-          finalUrl = await fileToBase64(file);
-        }
+        if (!uploadRes.ok) throw new Error('S3 upload failed');
+        finalUrl = publicUrl;
       } else {
-        console.warn('No presigned URL, falling back to Base64');
-        finalUrl = await fileToBase64(file);
+        throw new Error(presignedRes.error?.message || 'Failed to initialize upload');
       }
 
       // Update Database
@@ -196,14 +190,6 @@ export default function SettingsClient({ user }: UserSettingsProps) {
     }
   };
 
-  const fileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-  };
 
   const handleSaveLocation = async () => {
     setIsLoading(true);

@@ -70,7 +70,6 @@ export function ContributionForm() {
 
           const { presignedUrl, publicUrl } = presignedRes.data;
 
-          try {
             const uploadRes = await fetch(presignedUrl, {
               method: 'PUT',
               body: file,
@@ -83,17 +82,6 @@ export function ContributionForm() {
               throw new Error(`Upload failed for ${file.name}`);
             }
             publicUrls.push(publicUrl);
-          } catch (uploadError: any) {
-            console.warn(`Failed to upload to S3, falling back to Base64: ${uploadError.message}`);
-            // Fallback to base64 string for local development without S3
-            const base64Url = await new Promise<string>((resolve, reject) => {
-              const reader = new FileReader();
-              reader.onloadend = () => resolve(reader.result as string);
-              reader.onerror = reject;
-              reader.readAsDataURL(file);
-            });
-            publicUrls.push(base64Url);
-          }
         }
       }
 

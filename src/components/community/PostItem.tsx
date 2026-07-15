@@ -40,11 +40,14 @@ export function PostItem({ post, currentUserId }: { post: any, currentUserId?: s
   // Edit form state
   const [editTitle, setEditTitle] = useState(post.title);
   const [editContent, setEditContent] = useState(post.content);
-  const [editFile, setEditFile] = useState<File | null>(null);
-  const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(post.imageUrl || null);
-  const [removeImage, setRemoveImage] = useState(false);
+  
+  // Support both legacy imageUrl (single) and new imageUrls (array)
+  const existingImages = post.imageUrls || (post.imageUrl ? [post.imageUrl] : []);
+  const [currentImageUrls, setCurrentImageUrls] = useState<string[]>(existingImages);
+  const [editFiles, setEditFiles] = useState<File[]>([]);
 
   const isOwner = currentUserId === post.userId;
+  const isEdited = new Date(post.updatedAt).getTime() - new Date(post.createdAt).getTime() > 1000;
 
   const handleLike = async () => {
     if (!currentUserId) {
@@ -95,6 +98,21 @@ export function PostItem({ post, currentUserId }: { post: any, currentUserId?: s
     }
   };
 
+  const handleEditFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const newFiles = Array.from(e.target.files);
+      setEditFiles((prev) => [...prev, ...newFiles].slice(0, 10 - currentImageUrls.length));
+    }
+  };
+
+  const removeEditFile = (index: number) => {
+    setEditFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const removeCurrentImageUrl = (index: number) => {
+    setCurrentImageUrls((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const handleSaveEdit = async () => {
     if (!editTitle.trim() || !editContent.trim()) {
       toast.error("Title and content are required.");
@@ -102,46 +120,45 @@ export function PostItem({ post, currentUserId }: { post: any, currentUserId?: s
     }
 
     setIsSubmittingEdit(true);
-    let newImageUrl = currentImageUrl;
+    let finalImageUrls = [...currentImageUrls];
 
     try {
-      if (editFile) {
-        const presignedRes = await getPresignedUrlAction({
-          fileType: editFile.type,
-          fileSize: editFile.size,
-          folder: 'community',
-        });
+      if (editFiles.length > 0) {
+        for (const file of editFiles) {
+          const presignedRes = await getPresignedUrlAction({
+            fileType: file.type,
+            fileSize: file.size,
+            folder: 'community',
+          });
 
-        if (!presignedRes.success || !presignedRes.data) {
-          throw new Error(presignedRes.error?.message || 'Failed to initialize upload');
+          if (!presignedRes.success || !presignedRes.data) {
+            throw new Error(presignedRes.error?.message || `Failed to get upload URL for ${file.name}`);
+          }
+
+          const { presignedUrl, publicUrl } = presignedRes.data;
+          const uploadRes = await fetch(presignedUrl, {
+            method: 'PUT',
+            body: file,
+            headers: { 'Content-Type': file.type },
+          });
+
+          if (!uploadRes.ok) throw new Error(`Image upload failed for ${file.name}`);
+          finalImageUrls.push(publicUrl);
         }
-
-        const { presignedUrl, publicUrl } = presignedRes.data;
-        const uploadRes = await fetch(presignedUrl, {
-          method: 'PUT',
-          body: editFile,
-          headers: { 'Content-Type': editFile.type },
-        });
-
-        if (!uploadRes.ok) throw new Error(`Image upload failed: ${uploadRes.statusText}`);
-        newImageUrl = publicUrl;
-      } else if (removeImage) {
-        newImageUrl = null;
       }
 
       const res = await updateCommunityPostAction({
         postId: post.id,
         title: editTitle,
         content: editContent,
-        imageUrl: newImageUrl
+        imageUrls: finalImageUrls
       });
 
       if (res.success) {
         toast.success("Post updated successfully");
         setIsEditing(false);
-        setEditFile(null);
-        setRemoveImage(false);
-        setCurrentImageUrl(newImageUrl);
+        setEditFiles([]);
+        setCurrentImageUrls(finalImageUrls);
         router.refresh();
       } else {
         throw new Error(res.error?.message || "Failed to update post");
@@ -157,8 +174,8 @@ export function PostItem({ post, currentUserId }: { post: any, currentUserId?: s
     setIsEditing(false);
     setEditTitle(post.title);
     setEditContent(post.content);
-    setEditFile(null);
-    setRemoveImage(false);
+    setEditFiles([]);
+    setCurrentImageUrls(existingImages);
   };
 
   return (
@@ -170,9 +187,12 @@ export function PostItem({ post, currentUserId }: { post: any, currentUserId?: s
             <AvatarFallback>{post.user?.name?.charAt(0) || 'U'}</AvatarFallback>
           </Avatar>
           <div className="flex flex-col flex-1">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <span className="font-semibold text-foreground">{post.user?.name || 'Anonymous'}</span>
               <span className="text-xs text-muted-foreground">• {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}</span>
+              {isEdited && (
+                <span className="text-xs bg-muted text-muted-foreground px-1.5 py-0.5 rounded-sm ml-1">Edited</span>
+              )}
             </div>
           </div>
         </div>
@@ -213,54 +233,52 @@ export function PostItem({ post, currentUserId }: { post: any, currentUserId?: s
             />
             
             <div className="flex flex-col gap-2 mt-2">
-              <span className="text-sm font-medium">Image</span>
+              <span className="text-sm font-medium">Images</span>
               
-              {!editFile && !removeImage && currentImageUrl && (
-                <div className="relative inline-block w-fit">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={currentImageUrl} alt="Current image" className="h-32 rounded-md object-cover border border-border" />
-                  <button 
-                    type="button" 
-                    onClick={() => setRemoveImage(true)}
-                    className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-1 hover:bg-black/80"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </div>
-              )}
+              <div className="flex flex-wrap gap-3">
+                {currentImageUrls.map((url, idx) => (
+                  <div key={idx} className="relative inline-block">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={url} alt="Current image" className="h-24 w-24 rounded-md object-cover border border-border" />
+                    <button 
+                      type="button" 
+                      onClick={() => removeCurrentImageUrl(idx)}
+                      className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-0.5 hover:bg-black/80"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
 
-              {editFile && (
-                <div className="relative inline-block w-fit">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={URL.createObjectURL(editFile)} alt="New upload preview" className="h-32 rounded-md object-cover border border-border" />
-                  <button 
-                    type="button" 
-                    onClick={() => setEditFile(null)}
-                    className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-1 hover:bg-black/80"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </div>
-              )}
+                {editFiles.map((file, idx) => (
+                  <div key={idx} className="relative inline-block">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={URL.createObjectURL(file)} alt="New upload preview" className="h-24 w-24 rounded-md object-cover border border-border" />
+                    <button 
+                      type="button" 
+                      onClick={() => removeEditFile(idx)}
+                      className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-0.5 hover:bg-black/80"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
 
-              {(!currentImageUrl || removeImage) && !editFile && (
-                <div>
+              {currentImageUrls.length + editFiles.length < 10 && (
+                <div className="mt-2">
                   <input 
                     type="file" 
                     id={`edit-image-${post.id}`}
                     accept="image/*" 
+                    multiple
                     className="hidden" 
-                    onChange={(e) => {
-                      if (e.target.files && e.target.files[0]) {
-                        setEditFile(e.target.files[0]);
-                        setRemoveImage(false); // Reset removal if they pick a new file
-                      }
-                    }}
+                    onChange={handleEditFileChange}
                     disabled={isSubmittingEdit}
                   />
                   <label htmlFor={`edit-image-${post.id}`}>
                     <Button variant="outline" size="sm" type="button" className="text-muted-foreground gap-2" asChild disabled={isSubmittingEdit}>
-                      <span><ImagePlus className="h-4 w-4" /> Add Image</span>
+                      <span><ImagePlus className="h-4 w-4" /> Add Images</span>
                     </Button>
                   </label>
                 </div>
@@ -284,10 +302,26 @@ export function PostItem({ post, currentUserId }: { post: any, currentUserId?: s
               {post.content}
             </p>
             
-            {post.imageUrl && (
-              <div className="mt-4 rounded-lg overflow-hidden border border-border">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={post.imageUrl} alt={post.title} className="w-full h-auto max-h-[500px] object-cover" />
+            {existingImages.length > 0 && (
+              <div className="mt-4">
+                {existingImages.length === 1 ? (
+                  <div className="rounded-lg overflow-hidden border border-border">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={existingImages[0]} alt={post.title} className="w-full h-auto max-h-[500px] object-cover" />
+                  </div>
+                ) : (
+                  <div className="flex gap-2 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-thin scrollbar-thumb-muted-foreground/30 hover:scrollbar-thumb-muted-foreground/50">
+                    {existingImages.map((url: string, index: number) => (
+                      <div key={index} className="flex-shrink-0 w-[85%] sm:w-[70%] snap-center rounded-lg overflow-hidden border border-border relative">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={url} alt={`${post.title} - Image ${index + 1}`} className="w-full h-64 sm:h-80 object-cover" />
+                        <div className="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded-md">
+                          {index + 1} / {existingImages.length}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </>

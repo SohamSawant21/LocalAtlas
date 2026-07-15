@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { formatDistanceToNow } from 'date-fns';
-import { MessageCircle, Heart, Send, CornerDownRight } from 'lucide-react';
+import { MessageCircle, Heart, Send, CornerDownRight, Trash2 } from 'lucide-react';
 import { createCommunityCommentAction, toggleCommunityLikeAction } from '@/actions/community';
 import { toast } from 'sonner';
 
@@ -21,6 +21,7 @@ function CommentItem({ comment, currentUserId, postId, depth = 0, replies = [] }
   const [isReplying, setIsReplying] = useState(false);
   const [replyContent, setReplyContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const initialIsLiked = comment.likes?.some((like: any) => like.userId === currentUserId) || false;
   const initialLikeCount = comment.likes?.length || 0;
@@ -74,8 +75,23 @@ function CommentItem({ comment, currentUserId, postId, depth = 0, replies = [] }
     }
   };
 
+  const handleDelete = async () => {
+    if (!confirm("Are you sure you want to delete this comment?")) return;
+    
+    setIsDeleting(true);
+    try {
+      const { deleteCommunityCommentAction } = await import('@/actions/community');
+      const res = await deleteCommunityCommentAction({ commentId: comment.id });
+      if (!res.success) throw new Error(res.error?.message || "Failed to delete comment");
+      toast.success('Comment deleted!');
+    } catch (err: any) {
+      toast.error(err.message);
+      setIsDeleting(false);
+    }
+  };
+
   return (
-    <div className={`flex flex-col gap-3 ${depth > 0 ? 'mt-4 border-l-2 border-border/50 pl-4 ml-2' : 'mt-6'}`}>
+    <div className={`flex flex-col gap-3 ${depth > 0 ? 'mt-4 border-l-2 border-border/50 pl-4 ml-2' : 'mt-6'} ${isDeleting ? 'opacity-50 pointer-events-none' : ''}`}>
       <div className="flex gap-3">
         <Avatar className="h-8 w-8 border border-primary/10 flex-shrink-0">
           <AvatarImage src={comment.user?.avatar || ''} />
@@ -104,6 +120,16 @@ function CommentItem({ comment, currentUserId, postId, depth = 0, replies = [] }
             >
               <MessageCircle className="h-3 w-3" /> Reply
             </button>
+            
+            {currentUserId === comment.userId && (
+              <button 
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className="flex items-center gap-1.5 text-xs font-medium text-destructive hover:text-destructive/80 transition-colors ml-auto"
+              >
+                <Trash2 className="h-3 w-3" /> Delete
+              </button>
+            )}
           </div>
 
           {isReplying && (

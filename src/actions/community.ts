@@ -10,7 +10,7 @@ import { ActionResponse } from '@/types';
 const createPostSchema = z.object({
   title: z.string().min(1, 'Title is required').max(200, 'Title is too long'),
   content: z.string().min(1, 'Content is required').max(10000, 'Content is too long'),
-  imageUrl: z.string().optional(),
+  imageUrls: z.array(z.string()).optional().default([]),
 });
 
 const createCommentSchema = z.object({
@@ -40,7 +40,7 @@ export async function createCommunityPostAction(data: z.infer<typeof createPostS
       data: {
         title: parsed.data.title,
         content: parsed.data.content,
-        imageUrl: parsed.data.imageUrl,
+        imageUrls: parsed.data.imageUrls,
         userId: session.user.id,
       },
     });
@@ -151,7 +151,7 @@ const updatePostSchema = z.object({
   postId: z.string().min(1, 'Post ID is required'),
   title: z.string().min(1, 'Title is required').max(200, 'Title is too long').optional(),
   content: z.string().min(1, 'Content is required').max(10000, 'Content is too long').optional(),
-  imageUrl: z.string().nullable().optional(),
+  imageUrls: z.array(z.string()).optional(),
 });
 
 export async function updateCommunityPostAction(data: z.infer<typeof updatePostSchema>): Promise<ActionResponse<any>> {
@@ -183,7 +183,7 @@ export async function updateCommunityPostAction(data: z.infer<typeof updatePostS
       data: {
         ...(parsed.data.title && { title: parsed.data.title }),
         ...(parsed.data.content && { content: parsed.data.content }),
-        ...(parsed.data.imageUrl !== undefined && { imageUrl: parsed.data.imageUrl }),
+        ...(parsed.data.imageUrls !== undefined && { imageUrls: parsed.data.imageUrls }),
       },
     });
 
@@ -251,6 +251,65 @@ export async function deleteCommunityPostAction(data: z.infer<typeof deletePostS
 
     await prisma.communityPost.delete({
       where: { id: parsed.data.postId },
+    });
+
+    revalidatePath('/community');
+    return { success: true, data: null };
+  } catch (error: any) {
+    return { success: false, error: { code: 'INTERNAL_ERROR', message: error.message } };
+  }
+}
+
+const deleteCommentSchema = z.object({
+  commentId: z.string().min(1, 'Comment ID is required'),
+});
+
+export async function deleteCommunityCommentAction(data: z.infer<typeof deleteCommentSchema>): Promise<ActionResponse<any>> {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false, error: { code: 'UNAUTHORIZED', message: 'You must be logged in' } };
+    }
+
+    const parsed = deleteCommentSchema.safeParse(data);
+    if (!parsed.success) {
+      return { success: false, error: { code: 'BAD_REQUEST', message: parsed.error.errors[0].message } };
+    }
+
+    const comment = await prisma.comment.findUnique({
+      where: { id: parsed.data.commentId },
+    });
+
+    if (!comment) {
+      return { success: false, error: { code: 'NOT_FOUND', message: 'Comment not found' } };
+    }
+
+    if (comment.userId !== session.user.id) {
+      return { success: false, error: { code: 'FORBIDDEN', message: 'You can only delete your own comments' } };
+    }
+
+    // Delete likes on this comment
+    await prisma.like.deleteMany({
+      where: { commentId: parsed.data.commentId },
+    });
+    
+    // Delete the comment (Prisma Cascade should handle replies if configured, but let's be safe)
+    const replies = await prisma.comment.findMany({
+      where: { parentId: parsed.data.commentId }
+    });
+    
+    if (replies.length > 0) {
+      const replyIds = replies.map(r => r.id);
+      await prisma.like.deleteMany({
+        where: { commentId: { in: replyIds } }
+      });
+      await prisma.comment.deleteMany({
+        where: { parentId: parsed.data.commentId }
+      });
+    }
+
+    await prisma.comment.delete({
+      where: { id: parsed.data.commentId },
     });
 
     revalidatePath('/community');

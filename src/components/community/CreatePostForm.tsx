@@ -5,7 +5,7 @@ import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
-import { ImagePlus, Loader2, Send } from 'lucide-react';
+import { ImagePlus, Loader2, Send, X } from 'lucide-react';
 import { createCommunityPostAction } from '@/actions/community';
 import { toast } from 'sonner';
 import { getPresignedUrlAction } from '@/actions/storage';
@@ -14,14 +14,19 @@ import { useRouter } from 'next/navigation';
 export function CreatePostForm({ currentUserId }: { currentUserId?: string }) {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
+    if (e.target.files) {
+      const newFiles = Array.from(e.target.files);
+      setFiles((prev) => [...prev, ...newFiles].slice(0, 10)); // max 10 images
     }
+  };
+
+  const removeFile = (index: number) => {
+    setFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -38,32 +43,34 @@ export function CreatePostForm({ currentUserId }: { currentUserId?: string }) {
     }
 
     setIsSubmitting(true);
-    let imageUrl = undefined;
+    let imageUrls: string[] = [];
 
     try {
-      if (file) {
-        const presignedResult = await getPresignedUrlAction({
-          fileType: file.type,
-          fileSize: file.size,
-          folder: 'community',
-        });
+      if (files.length > 0) {
+        for (const file of files) {
+          const presignedResult = await getPresignedUrlAction({
+            fileType: file.type,
+            fileSize: file.size,
+            folder: 'community',
+          });
 
-        if (!presignedResult.success || !presignedResult.data) {
-          throw new Error(presignedResult.error?.message || 'Failed to get upload URL');
+          if (!presignedResult.success || !presignedResult.data) {
+            throw new Error(presignedResult.error?.message || `Failed to get upload URL for ${file.name}`);
+          }
+
+          const { presignedUrl, publicUrl } = presignedResult.data;
+          const uploadRes = await fetch(presignedUrl, {
+            method: 'PUT',
+            body: file,
+            headers: { 'Content-Type': file.type },
+          });
+          
+          if (!uploadRes.ok) throw new Error(`Image upload failed for ${file.name}: ${uploadRes.statusText}`);
+          imageUrls.push(publicUrl);
         }
-
-        const { presignedUrl, publicUrl } = presignedResult.data;
-        const uploadRes = await fetch(presignedUrl, {
-          method: 'PUT',
-          body: file,
-          headers: { 'Content-Type': file.type },
-        });
-        
-        if (!uploadRes.ok) throw new Error(`Image upload failed: ${uploadRes.statusText}`);
-        imageUrl = publicUrl;
       }
 
-      const res = await createCommunityPostAction({ title, content, imageUrl });
+      const res = await createCommunityPostAction({ title, content, imageUrls });
       if (!res.success) {
         throw new Error(res.error?.message || 'Failed to create post');
       }
@@ -71,7 +78,7 @@ export function CreatePostForm({ currentUserId }: { currentUserId?: string }) {
       toast.success('Post created successfully!');
       setTitle('');
       setContent('');
-      setFile(null);
+      setFiles([]);
       
       // Refresh the page data
       router.refresh();
@@ -101,17 +108,21 @@ export function CreatePostForm({ currentUserId }: { currentUserId?: string }) {
             disabled={isSubmitting}
           />
           
-          {file && (
-            <div className="relative inline-block mt-4">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={URL.createObjectURL(file)} alt="Upload preview" className="h-32 rounded-md object-cover border border-border" />
-              <button 
-                type="button" 
-                onClick={() => setFile(null)} 
-                className="absolute top-1 right-1 bg-black/50 text-white rounded-full p-1 hover:bg-black/70"
-              >
-                &times;
-              </button>
+          {files.length > 0 && (
+            <div className="flex flex-wrap gap-3 mt-4">
+              {files.map((file, index) => (
+                <div key={`${file.name}-${index}`} className="relative inline-block">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={URL.createObjectURL(file)} alt="Upload preview" className="h-24 w-24 rounded-md object-cover border border-border" />
+                  <button 
+                    type="button" 
+                    onClick={() => removeFile(index)} 
+                    className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-0.5 hover:bg-black/80"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ))}
             </div>
           )}
         </CardContent>
@@ -120,14 +131,15 @@ export function CreatePostForm({ currentUserId }: { currentUserId?: string }) {
             <input 
               type="file" 
               id="image-upload" 
-              accept="image/*" 
+              accept="image/*"
+              multiple
               className="hidden" 
               onChange={handleFileChange}
-              disabled={isSubmitting}
+              disabled={isSubmitting || files.length >= 10}
             />
             <label htmlFor="image-upload">
-              <Button variant="ghost" size="sm" type="button" className="text-muted-foreground gap-2" asChild disabled={!currentUserId || isSubmitting}>
-                <span><ImagePlus className="h-4 w-4" /> Add Image</span>
+              <Button variant="ghost" size="sm" type="button" className="text-muted-foreground gap-2" asChild disabled={!currentUserId || isSubmitting || files.length >= 10}>
+                <span><ImagePlus className="h-4 w-4" /> Add Images</span>
               </Button>
             </label>
           </div>

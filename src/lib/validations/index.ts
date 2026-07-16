@@ -21,6 +21,7 @@ export const locationFormSchema = z.object({
   parking: z.string().optional(),
   network: z.string().optional(),
   accessibility: z.string().optional(),
+  sunset: z.string().optional(),
   tags: z.array(z.string()).default([]),
 });
 

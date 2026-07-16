@@ -33,6 +33,7 @@ export function ContributionForm() {
     bestSeason: 'ALL_YEAR',
     tags: [],
     images: [],
+    coverImageIndex: 0,
   });
 
   const updateFormData = (data: Partial<ContributionFormData>) => {
@@ -57,7 +58,12 @@ export function ContributionForm() {
       const publicUrls: string[] = [];
 
       if (formData.images && formData.images.length > 0) {
-        for (const file of formData.images) {
+        let filesToUpload = [...formData.images];
+        if (formData.coverImageIndex !== undefined && formData.coverImageIndex > 0 && formData.coverImageIndex < filesToUpload.length) {
+          const coverFile = filesToUpload.splice(formData.coverImageIndex, 1)[0];
+          filesToUpload.unshift(coverFile);
+        }
+        for (const file of filesToUpload) {
           const presignedRes = await getPresignedUrlAction({
             fileType: file.type,
             fileSize: file.size,
@@ -96,6 +102,11 @@ export function ContributionForm() {
         crowdLevel: formData.crowdLevel || 'LOW',
         roadCondition: formData.roadCondition || 'GOOD',
         bestSeason: formData.bestSeason || 'ALL_YEAR',
+        entryFee: formData.entryFee,
+        parking: formData.parking,
+        network: formData.network,
+        accessibility: formData.accessibility,
+        sunset: formData.sunset,
         images: publicUrls,
       });
 
@@ -104,7 +115,7 @@ export function ContributionForm() {
         setShowConfirm(false);
         setCurrentStep(0);
         setFormData({
-          name: '', district: 'SINDHUDURG', category: 'OTHER', description: '', latitude: 0, longitude: 0, difficulty: 'EASY', crowdLevel: 'LOW', roadCondition: 'GOOD', bestSeason: 'ALL_YEAR', tags: [], images: []
+          name: '', district: 'SINDHUDURG', category: 'OTHER', description: '', latitude: 0, longitude: 0, difficulty: 'EASY', crowdLevel: 'LOW', roadCondition: 'GOOD', bestSeason: 'ALL_YEAR', tags: [], images: [], coverImageIndex: 0
         });
       } else {
         toast.error(response.error?.message || 'Failed to submit.');
@@ -205,7 +216,16 @@ export function ContributionForm() {
               <LocationPickerMap
                 latitude={formData.latitude || 0}
                 longitude={formData.longitude || 0}
-                onChange={(lat, lng) => updateFormData({ latitude: lat, longitude: lng })}
+                onChange={(lat, lng, addressDetails) => {
+                  const updates: Partial<any> = { latitude: lat, longitude: lng };
+                  if (addressDetails) {
+                    const district = (addressDetails.state_district || addressDetails.county || '').toUpperCase();
+                    if (district.includes('SINDHUDURG')) updates.district = 'SINDHUDURG';
+                    else if (district.includes('RATNAGIRI')) updates.district = 'RATNAGIRI';
+                    else if (district.includes('RAIGAD')) updates.district = 'RAIGAD';
+                  }
+                  updateFormData(updates);
+                }}
                 category={formData.category}
               />
             </div>
@@ -261,6 +281,30 @@ export function ContributionForm() {
                 </Select>
               </div>
             </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Entry Fee (Optional)</Label>
+                <Input placeholder="e.g. ₹50 per person" value={formData.entryFee || ''} onChange={(e) => updateFormData({ entryFee: e.target.value })} />
+              </div>
+              <div className="space-y-2">
+                <Label>Parking (Optional)</Label>
+                <Input placeholder="e.g. Paid parking available" value={formData.parking || ''} onChange={(e) => updateFormData({ parking: e.target.value })} />
+              </div>
+              <div className="space-y-2">
+                <Label>Network Coverage (Optional)</Label>
+                <Input placeholder="e.g. Good Jio network, no Airtel" value={formData.network || ''} onChange={(e) => updateFormData({ network: e.target.value })} />
+              </div>
+              <div className="space-y-2">
+                <Label>Accessibility (Optional)</Label>
+                <Input placeholder="e.g. 10 min walk from road" value={formData.accessibility || ''} onChange={(e) => updateFormData({ accessibility: e.target.value })} />
+              </div>
+            </div>
+            {(formData.category === 'BEACH' || formData.category === 'VIEWPOINT') && (
+              <div className="space-y-2">
+                <Label>Sunset Point (Optional)</Label>
+                <Input placeholder="e.g. Great sunset views after 6 PM" value={formData.sunset || ''} onChange={(e) => updateFormData({ sunset: e.target.value })} />
+              </div>
+            )}
           </div>
         )}
 
@@ -295,9 +339,20 @@ export function ContributionForm() {
                 <Button variant="secondary">Select Files</Button>
               </div>
               {formData.images && formData.images.length > 0 && (
-                <p className="text-sm mt-4 text-green-600 font-medium">
-                  {formData.images.length} file(s) selected
-                </p>
+                <div className="w-full mt-6 space-y-3">
+                  <h4 className="text-sm font-medium text-left">Selected Images (Choose one as Cover)</h4>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {formData.images.map((file, idx) => (
+                      <div key={idx} className={`relative rounded-lg overflow-hidden border-2 cursor-pointer transition-all ${formData.coverImageIndex === idx ? 'border-primary' : 'border-transparent'}`} onClick={() => updateFormData({ coverImageIndex: idx })}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={URL.createObjectURL(file)} alt="preview" className="w-full h-24 object-cover" />
+                        {formData.coverImageIndex === idx && (
+                          <div className="absolute top-1 right-1 bg-primary text-primary-foreground text-xs px-2 py-0.5 rounded-full font-medium shadow-sm">Cover</div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
               )}
             </div>
           </div>

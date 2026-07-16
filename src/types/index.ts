@@ -183,8 +183,10 @@ export interface ContributionFormData {
   parking?: string;
   network?: string;
   accessibility?: string;
+  sunset?: string;
   tags: string[];
   images: File[];
+  coverImageIndex?: number;
 }
 
 export interface ActionResponse<T = any> {

@@ -46,7 +46,7 @@ export async function searchLocationsAction(query: string) {
     const locations = await prisma.location.findMany({
       where: {
         name: { contains: query, mode: 'insensitive' },
-        status: 'APPROVED',
+        status: { in: ['APPROVED', 'PENDING'] },
       },
       take: 5,
       select: { id: true, name: true, district: true, slug: true },

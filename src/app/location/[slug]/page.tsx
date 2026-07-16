@@ -132,6 +132,24 @@ export default async function LocationPage({ params }: LocationPageProps) {
                   </Badge>
                 ))}
               </div>
+              
+              {location.images.length > 1 && (
+                <div className="mt-8 pt-6 border-t">
+                  <h3 className="text-xl font-semibold mb-4">Gallery</h3>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                    {location.images.slice(1).map((img, idx) => (
+                      <div key={idx} className="relative aspect-square rounded-xl overflow-hidden group border shadow-sm">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img 
+                          src={img} 
+                          alt={`${location.name} - Gallery image ${idx + 1}`} 
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </TabsContent>
             
             <TabsContent value="reviews">

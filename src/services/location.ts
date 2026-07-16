@@ -99,3 +99,28 @@ export async function updateLocationStatus(locationId: string, status: LocationS
     return loc;
   });
 }
+
+export async function getNearbyLocations(lat: number, lng: number, radiusMeters: number = 100) {
+  const nearby: any[] = await prisma.$queryRaw`
+    SELECT id, name, slug, category, (
+      6371000 * acos(
+        cos(radians(${lat}::float)) * cos(radians(latitude)) *
+        cos(radians(longitude) - radians(${lng}::float)) +
+        sin(radians(${lat}::float)) * sin(radians(latitude))
+      )
+    ) AS distance
+    FROM "locations"
+    WHERE status IN ('APPROVED', 'PENDING')
+    AND latitude IS NOT NULL 
+    AND longitude IS NOT NULL
+  `;
+
+  return nearby
+    .filter(loc => loc.distance <= radiusMeters)
+    .sort((a, b) => a.distance - b.distance)
+    .slice(0, 3)
+    .map(loc => ({
+      ...loc,
+      distance: Number(loc.distance)
+    }));
+}

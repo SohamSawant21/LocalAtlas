@@ -19,6 +19,10 @@ const contributionSchema = z.object({
   roadCondition: z.enum(['EXCELLENT', 'GOOD', 'FAIR', 'POOR', 'OFFROAD']),
   bestSeason: z.enum(['MONSOON', 'WINTER', 'SUMMER', 'ALL_YEAR']),
   entryFee: z.string().optional(),
+  parking: z.string().optional(),
+  network: z.string().optional(),
+  accessibility: z.string().optional(),
+  sunset: z.string().optional(),
   tags: z.array(z.string()).optional(),
   images: z.array(z.string()).optional(),
 });
@@ -96,6 +100,10 @@ const editLocationSchema = z.object({
   roadCondition: z.enum(['EXCELLENT', 'GOOD', 'FAIR', 'POOR', 'OFFROAD']).optional(),
   bestSeason: z.enum(['MONSOON', 'WINTER', 'SUMMER', 'ALL_YEAR']).optional(),
   entryFee: z.string().optional(),
+  parking: z.string().optional(),
+  network: z.string().optional(),
+  accessibility: z.string().optional(),
+  sunset: z.string().optional(),
   tags: z.array(z.string()).optional(),
   images: z.array(z.string()).optional(),
 });
@@ -122,6 +130,20 @@ export async function editLocationAction(data: z.infer<typeof editLocationSchema
     revalidateTag('locations');
     revalidateTag('location');
     
+    return { success: true, data: result };
+  } catch (error: any) {
+    return { success: false, error: { code: 'INTERNAL_ERROR', message: error.message } };
+  }
+}
+
+export async function checkNearbyLocationsAction(lat: number, lng: number): Promise<ActionResponse<any>> {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false, error: { code: 'UNAUTHORIZED', message: 'You must be logged in.' } };
+    }
+    const { getNearbyLocations } = await import('@/services/location');
+    const result = await getNearbyLocations(lat, lng, 100);
     return { success: true, data: result };
   } catch (error: any) {
     return { success: false, error: { code: 'INTERNAL_ERROR', message: error.message } };

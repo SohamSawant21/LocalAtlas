@@ -6,6 +6,7 @@ import { MapPin, Trophy, Navigation, Settings, Grid, Bookmark, Award, Calendar }
 import { GemCard } from '@/components/shared/GemCard';
 import { DiscoveriesList } from '@/components/profile/DiscoveriesList';
 import { FollowButton } from '@/components/profile/FollowButton';
+import { PostItem } from '@/components/community/PostItem';
 import Link from 'next/link';
 
 interface ProfileViewProps {
@@ -123,22 +124,48 @@ export function ProfileView({ user, locations, currentUserId, isFollowing = fals
           <DiscoveriesList locations={locations} currentUserId={currentUserId} />
         </TabsContent>
 
-        <TabsContent value="saved" className="mt-6">
-          {(user as any).savedPlaces && (user as any).savedPlaces.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {(user as any).savedPlaces.map((sp: any) => (
-                <GemCard key={sp.location.id} location={sp.location} />
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-16 bg-muted/20 rounded-2xl border border-dashed">
-              <Bookmark className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-              <h3 className="text-lg font-medium">No saved places</h3>
-              <p className="text-muted-foreground text-sm mt-1">
-                Start saving hidden gems you want to visit later.
-              </p>
-            </div>
-          )}
+        <TabsContent value="saved" className="mt-6 space-y-12">
+          {/* Saved Places Section */}
+          <section>
+            <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+              <MapPin className="h-6 w-6 text-primary" />
+              Saved Places
+            </h2>
+            {(user as any).savedPlaces && (user as any).savedPlaces.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {(user as any).savedPlaces.map((sp: any) => (
+                  <GemCard key={sp.location.id} location={sp.location} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12 bg-muted/20 rounded-2xl border border-dashed">
+                <Bookmark className="w-10 h-10 text-muted-foreground mx-auto mb-3 opacity-50" />
+                <h3 className="text-base font-medium">No saved places</h3>
+                <p className="text-muted-foreground text-sm mt-1">Start saving hidden gems you want to visit later.</p>
+              </div>
+            )}
+          </section>
+
+          {/* Saved Community Posts Section */}
+          <section>
+            <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+              <Bookmark className="h-6 w-6 text-primary" />
+              Saved Community Posts
+            </h2>
+            {(user as any).savedPosts && (user as any).savedPosts.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                {(user as any).savedPosts.map((sp: any) => (
+                  <PostItem key={sp.post.id} post={sp.post} currentUserId={currentUserId || undefined} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12 bg-muted/20 rounded-2xl border border-dashed">
+                <Bookmark className="w-10 h-10 text-muted-foreground mx-auto mb-3 opacity-50" />
+                <h3 className="text-base font-medium">No saved posts</h3>
+                <p className="text-muted-foreground text-sm mt-1">Bookmark useful community discussions to read later.</p>
+              </div>
+            )}
+          </section>
         </TabsContent>
 
         <TabsContent value="badges" className="mt-6">

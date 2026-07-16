@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { fetchCommunityPosts } from '@/actions/community';
 import { Loader2 } from 'lucide-react';
 
-export function PostList({ initialPosts, initialNextCursor, currentUserId }: { initialPosts: any[], initialNextCursor?: string, currentUserId?: string }) {
+export function PostList({ initialPosts, initialNextCursor, currentUserId, categoryFilter }: { initialPosts: any[], initialNextCursor?: string, currentUserId?: string, categoryFilter?: any }) {
   const [posts, setPosts] = useState(initialPosts || []);
   const [nextCursor, setNextCursor] = useState(initialNextCursor);
   const [isLoading, setIsLoading] = useState(false);
@@ -15,7 +15,7 @@ export function PostList({ initialPosts, initialNextCursor, currentUserId }: { i
     if (!nextCursor || isLoading) return;
     setIsLoading(true);
     try {
-      const res = await fetchCommunityPosts(nextCursor, 10);
+      const res = await fetchCommunityPosts(nextCursor, 10, categoryFilter);
       setPosts(prev => [...prev, ...res.posts]);
       setNextCursor(res.nextCursor);
     } catch (error) {

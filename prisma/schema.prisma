@@ -81,6 +81,19 @@ enum NotificationType {
   SYSTEM
 }
 
+enum PostCategory {
+  PLACE_RECOMMENDATION
+  QUESTION
+  PHOTO
+  TRAVEL_TIP
+  ALERT
+  FESTIVAL
+  ROUTE_UPDATE
+  FOOD
+  HERITAGE
+  MEETUP
+}
+
 enum VerificationStatus {
   PENDING
   APPROVED
@@ -112,6 +125,7 @@ model User {
   locations      Location[]    @relation("contributor")
   photos         Photo[]
   savedPlaces    SavedPlace[]
+  savedPosts     SavedPost[]
   trips          Trip[]
   reviews        Review[]
   stories        Story[]
@@ -123,6 +137,7 @@ model User {
   achievements   Achievement[]
   userBadges     UserBadge[]
   verifications  Verification[]
+  pollVotes      PollVote[]
   followers      Follow[]  @relation("following")
   following      Follow[]  @relation("follower")
 
@@ -201,6 +216,7 @@ model Location {
   likes         Like[]
   notifications Notification[]
   verifications Verification[]
+  communityPosts CommunityPost[]
 
   @@index([district])
   @@index([category])
@@ -415,21 +431,80 @@ model Like {
 }
 
 model CommunityPost {
-  id        String   @id @default(cuid())
-  title     String
-  content   String   @db.Text
-  imageUrls String[]
-  userId    String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String       @id @default(cuid())
+  title      String
+  content    String       @db.Text
+  imageUrls  String[]
+  category   PostCategory @default(QUESTION)
+  userId     String
+  locationId String?
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
 
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  comments  Comment[]
-  likes     Like[]
+  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  location   Location?     @relation(fields: [locationId], references: [id], onDelete: SetNull)
+  comments   Comment[]
+  likes      Like[]
+  savedBy    SavedPost[]
+  poll       Poll?
 
   @@index([createdAt])
   @@index([userId])
+  @@index([category])
+  @@index([locationId])
   @@map("community_posts")
+}
+
+model SavedPost {
+  id             String   @id @default(cuid())
+  userId         String
+  postId         String
+  collectionName String?
+  createdAt      DateTime @default(now())
+  
+  user     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post     CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, postId])
+  @@map("saved_posts")
+}
+
+model Poll {
+  id        String       @id @default(cuid())
+  postId    String       @unique
+  options   PollOption[]
+  votes     PollVote[]
+  createdAt DateTime     @default(now())
+
+  post      CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@map("polls")
+}
+
+model PollOption {
+  id        String     @id @default(cuid())
+  text      String
+  pollId    String
+  votes     PollVote[]
+  
+  poll      Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
+
+  @@map("poll_options")
+}
+
+model PollVote {
+  id        String     @id @default(cuid())
+  userId    String
+  optionId  String
+  pollId    String
+  createdAt DateTime   @default(now())
+  
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  option    PollOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  poll      Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, pollId])
+  @@map("poll_votes")
 }
 
 model Verification {

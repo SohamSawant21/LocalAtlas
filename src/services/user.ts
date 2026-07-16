@@ -27,6 +27,30 @@ export const getUserProfile = unstable_cache(async (id: string) => {
         locations: true,
         stories: true,
         savedPlaces: { include: { location: true } },
+        savedPosts: {
+          include: {
+            post: {
+              include: {
+                user: { select: { id: true, name: true, avatar: true } },
+                location: { select: { id: true, name: true, slug: true, district: true } },
+                _count: { select: { likes: true, comments: true } },
+                likes: { where: { userId: id }, select: { id: true, userId: true } },
+                savedBy: { where: { userId: id }, select: { id: true } },
+                poll: {
+                  include: {
+                    options: {
+                      include: {
+                        _count: { select: { votes: true } },
+                        votes: { where: { userId: id }, select: { id: true, optionId: true } }
+                      }
+                    },
+                    _count: { select: { votes: true } }
+                  }
+                }
+              }
+            }
+          }
+        },
         userBadges: { include: { badge: true } },
         _count: {
           select: { followers: true, following: true, savedPlaces: true, locations: true }

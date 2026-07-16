@@ -71,6 +71,11 @@ export async function createCommunityCommentAction(data: z.infer<typeof createCo
         userId: session.user.id,
         parentId: parsed.data.parentId,
       },
+      include: {
+        user: { select: { id: true, name: true, avatar: true } },
+        _count: { select: { likes: true } },
+        likes: false, // newly created comment has no likes
+      },
     });
 
     revalidatePath('/community');
@@ -128,22 +133,62 @@ export async function toggleCommunityLikeAction(data: z.infer<typeof toggleLikeS
   }
 }
 
-export async function fetchCommunityPosts() {
+export async function fetchCommunityPosts(cursor?: string, limit: number = 10) {
   try {
+    const session = await auth();
+    const userId = session?.user?.id;
+
     const posts = await prisma.communityPost.findMany({
+      take: limit + 1, // to check if there's a next page
+      ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
       orderBy: { createdAt: 'desc' },
       include: {
-        user: true,
-        likes: true,
-        comments: {
-           include: { user: true, likes: true }
-        }
+        user: {
+          select: { id: true, name: true, avatar: true },
+        },
+        _count: {
+          select: { likes: true, comments: true },
+        },
+        likes: userId ? {
+          where: { userId },
+          select: { id: true, userId: true },
+        } : false,
       },
     });
-    return posts;
+    
+    let nextCursor: typeof cursor | undefined = undefined;
+    if (posts.length > limit) {
+      const nextItem = posts.pop(); // remove the extra item
+      nextCursor = nextItem?.id;
+    }
+
+    return { posts, nextCursor };
   } catch (error) {
     console.error('Error fetching community posts:', error);
-    return [];
+    return { posts: [], nextCursor: undefined };
+  }
+}
+
+export async function fetchPostCommentsAction(postId: string) {
+  try {
+    const session = await auth();
+    const userId = session?.user?.id;
+
+    const comments = await prisma.comment.findMany({
+      where: { postId },
+      orderBy: { createdAt: 'asc' },
+      include: {
+        user: { select: { id: true, name: true, avatar: true } },
+        _count: { select: { likes: true } },
+        likes: userId ? {
+          where: { userId },
+          select: { id: true, userId: true },
+        } : false,
+      },
+    });
+    return { success: true, data: comments };
+  } catch (error: any) {
+    return { success: false, error: { message: error.message } };
   }
 }
 
@@ -222,32 +267,8 @@ export async function deleteCommunityPostAction(data: z.infer<typeof deletePostS
       return { success: false, error: { code: 'FORBIDDEN', message: 'You can only delete your own posts' } };
     }
 
-    // Prisma's onDelete: Cascade will handle likes and comments if we set it up,
-    // but just to be safe, we can manually delete them or rely on cascade.
-    // Assuming Cascade is set on CommunityPost -> Comment, Like.
-    
-    // We should delete likes specifically targeting this post
-    await prisma.like.deleteMany({
-      where: { postId: parsed.data.postId },
-    });
-    
-    // We should delete all comments targeting this post
-    // Because comments can have replies, we first get all comments for this post
-    const postComments = await prisma.comment.findMany({
-      where: { postId: parsed.data.postId }
-    });
-    const commentIds = postComments.map(c => c.id);
-    
-    if (commentIds.length > 0) {
-      // Delete likes on those comments
-      await prisma.like.deleteMany({
-        where: { commentId: { in: commentIds } }
-      });
-      // Delete comments
-      await prisma.comment.deleteMany({
-        where: { postId: parsed.data.postId }
-      });
-    }
+    // Prisma's onDelete: Cascade handles likes and comments automatically
+
 
     await prisma.communityPost.delete({
       where: { id: parsed.data.postId },
@@ -288,25 +309,8 @@ export async function deleteCommunityCommentAction(data: z.infer<typeof deleteCo
       return { success: false, error: { code: 'FORBIDDEN', message: 'You can only delete your own comments' } };
     }
 
-    // Delete likes on this comment
-    await prisma.like.deleteMany({
-      where: { commentId: parsed.data.commentId },
-    });
-    
-    // Delete the comment (Prisma Cascade should handle replies if configured, but let's be safe)
-    const replies = await prisma.comment.findMany({
-      where: { parentId: parsed.data.commentId }
-    });
-    
-    if (replies.length > 0) {
-      const replyIds = replies.map(r => r.id);
-      await prisma.like.deleteMany({
-        where: { commentId: { in: replyIds } }
-      });
-      await prisma.comment.deleteMany({
-        where: { parentId: parsed.data.commentId }
-      });
-    }
+    // Prisma's onDelete: Cascade handles nested likes and replies automatically
+
 
     await prisma.comment.delete({
       where: { id: parsed.data.commentId },

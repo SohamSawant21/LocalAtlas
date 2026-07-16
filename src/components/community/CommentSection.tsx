@@ -15,16 +15,18 @@ interface CommentProps {
   postId: string;
   depth?: number;
   replies?: any[];
+  onReplyAdded: (reply: any) => void;
+  onCommentDeleted: (id: string) => void;
 }
 
-function CommentItem({ comment, currentUserId, postId, depth = 0, replies = [] }: CommentProps) {
+function CommentItem({ comment, currentUserId, postId, depth = 0, replies = [], onReplyAdded, onCommentDeleted }: CommentProps) {
   const [isReplying, setIsReplying] = useState(false);
   const [replyContent, setReplyContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const initialIsLiked = comment.likes?.some((like: any) => like.userId === currentUserId) || false;
-  const initialLikeCount = comment.likes?.length || 0;
+  const initialIsLiked = comment.likes?.length > 0;
+  const initialLikeCount = comment._count?.likes || 0;
   
   const [isLiked, setIsLiked] = useState(initialIsLiked);
   const [likeCount, setLikeCount] = useState(initialLikeCount);
@@ -65,6 +67,7 @@ function CommentItem({ comment, currentUserId, postId, depth = 0, replies = [] }
       });
       if (!res.success) throw new Error(res.error?.message);
       
+      onReplyAdded(res.data);
       setReplyContent('');
       setIsReplying(false);
       toast.success('Reply posted!');
@@ -83,6 +86,7 @@ function CommentItem({ comment, currentUserId, postId, depth = 0, replies = [] }
       const { deleteCommunityCommentAction } = await import('@/actions/community');
       const res = await deleteCommunityCommentAction({ commentId: comment.id });
       if (!res.success) throw new Error(res.error?.message || "Failed to delete comment");
+      onCommentDeleted(comment.id);
       toast.success('Comment deleted!');
     } catch (err: any) {
       toast.error(err.message);
@@ -94,7 +98,7 @@ function CommentItem({ comment, currentUserId, postId, depth = 0, replies = [] }
     <div className={`flex flex-col gap-3 ${depth > 0 ? 'mt-4 border-l-2 border-border/50 pl-4 ml-2' : 'mt-6'} ${isDeleting ? 'opacity-50 pointer-events-none' : ''}`}>
       <div className="flex gap-3">
         <Avatar className="h-8 w-8 border border-primary/10 flex-shrink-0">
-          <AvatarImage src={comment.user?.avatar || ''} />
+          <AvatarImage src={comment.user?.avatar || ''} loading="lazy" decoding="async" />
           <AvatarFallback className="text-xs">{comment.user?.name?.charAt(0) || 'U'}</AvatarFallback>
         </Avatar>
         <div className="flex-1 space-y-1">
@@ -166,6 +170,8 @@ function CommentItem({ comment, currentUserId, postId, depth = 0, replies = [] }
               postId={postId}
               depth={depth + 1}
               replies={reply.children}
+              onReplyAdded={onReplyAdded}
+              onCommentDeleted={onCommentDeleted}
             />
           ))}
         </div>
@@ -174,7 +180,8 @@ function CommentItem({ comment, currentUserId, postId, depth = 0, replies = [] }
   );
 }
 
-export function CommentSection({ postId, comments, currentUserId }: { postId: string, comments: any[], currentUserId?: string }) {
+export function CommentSection({ postId, initialComments, currentUserId }: { postId: string, initialComments: any[], currentUserId?: string }) {
+  const [comments, setComments] = useState(initialComments);
   const [newComment, setNewComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -195,6 +202,7 @@ export function CommentSection({ postId, comments, currentUserId }: { postId: st
       });
       if (!res.success) throw new Error(res.error?.message);
       
+      setComments(prev => [res.data, ...prev]);
       setNewComment('');
       toast.success('Comment posted!');
     } catch (err: any) {
@@ -202,6 +210,15 @@ export function CommentSection({ postId, comments, currentUserId }: { postId: st
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleAddComment = (comment: any) => {
+    setComments(prev => [comment, ...prev]);
+  };
+
+  const handleRemoveComment = (commentId: string) => {
+    // This simple approach will remove the comment and conceptually its children won't be rendered
+    setComments(prev => prev.filter(c => c.id !== commentId && c.parentId !== commentId));
   };
 
   // Build comment tree
@@ -257,6 +274,8 @@ export function CommentSection({ postId, comments, currentUserId }: { postId: st
             currentUserId={currentUserId}
             postId={postId}
             replies={comment.children}
+            onReplyAdded={handleAddComment}
+            onCommentDeleted={handleRemoveComment}
           />
         ))}
       </div>

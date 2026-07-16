@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 export const dynamic = 'force-dynamic';
 
 export default async function CommunityPage() {
-  const posts = await fetchCommunityPosts();
+  const { posts, nextCursor } = await fetchCommunityPosts();
   const session = await auth();
   const currentUserId = session?.user?.id;
 
@@ -32,7 +32,7 @@ export default async function CommunityPage() {
                 <Users className="h-6 w-6" />
                 Community Feed
               </h2>
-              <PostList initialPosts={posts} currentUserId={currentUserId} />
+              <PostList initialPosts={posts} initialNextCursor={nextCursor} currentUserId={currentUserId} />
             </div>
           </div>
           

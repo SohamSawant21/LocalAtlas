@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Heart, MessageCircle, MoreHorizontal, Pencil, Trash2, X, Check, Loader2, ImagePlus } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { toggleCommunityLikeAction, deleteCommunityPostAction, updateCommunityPostAction } from '@/actions/community';
+import { fetchPostCommentsAction, toggleCommunityLikeAction, deleteCommunityPostAction, updateCommunityPostAction } from '@/actions/community';
 import { getPresignedUrlAction } from '@/actions/storage';
 import { CommentSection } from './CommentSection';
 import { toast } from 'sonner';
@@ -22,11 +22,13 @@ import { Textarea } from '@/components/ui/textarea';
 
 export function PostItem({ post, currentUserId }: { post: any, currentUserId?: string }) {
   const [showComments, setShowComments] = useState(false);
+  const [comments, setComments] = useState<any[]>([]);
+  const [isLoadingComments, setIsLoadingComments] = useState(false);
   const router = useRouter();
 
   // Optimistic UI state for likes
-  const initialIsLiked = post.likes?.some((like: any) => like.userId === currentUserId) || false;
-  const initialLikeCount = post.likes?.length || 0;
+  const initialIsLiked = post.likes?.length > 0;
+  const initialLikeCount = post._count?.likes || 0;
   
   const [isLiked, setIsLiked] = useState(initialIsLiked);
   const [likeCount, setLikeCount] = useState(initialLikeCount);
@@ -178,6 +180,22 @@ export function PostItem({ post, currentUserId }: { post: any, currentUserId?: s
     setCurrentImageUrls(existingImages);
   };
 
+  const handleToggleComments = async () => {
+    if (!showComments) {
+      if (comments.length === 0 && post._count?.comments > 0) {
+        setIsLoadingComments(true);
+        const res = await fetchPostCommentsAction(post.id);
+        if (res.success && res.data) {
+          setComments(res.data);
+        }
+        setIsLoadingComments(false);
+      }
+      setShowComments(true);
+    } else {
+      setShowComments(false);
+    }
+  };
+
   return (
     <Card className={`overflow-hidden border-border/50 bg-card transition-shadow ${isDeleting ? 'opacity-50 pointer-events-none' : 'hover:shadow-md'}`}>
       <CardHeader className="flex flex-row items-start justify-between gap-4 pb-2">
@@ -307,14 +325,14 @@ export function PostItem({ post, currentUserId }: { post: any, currentUserId?: s
                 {existingImages.length === 1 ? (
                   <div className="rounded-lg overflow-hidden border border-border">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={existingImages[0]} alt={post.title} className="w-full h-auto max-h-[500px] object-cover" />
+                    <img src={existingImages[0]} alt={post.title} loading="lazy" decoding="async" className="w-full h-auto max-h-[500px] object-cover" />
                   </div>
                 ) : (
                   <div className="flex gap-2 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-thin scrollbar-thumb-muted-foreground/30 hover:scrollbar-thumb-muted-foreground/50">
                     {existingImages.map((url: string, index: number) => (
                       <div key={index} className="flex-shrink-0 w-[85%] sm:w-[70%] snap-center rounded-lg overflow-hidden border border-border relative">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={url} alt={`${post.title} - Image ${index + 1}`} className="w-full h-64 sm:h-80 object-cover" />
+                        <img src={url} alt={`${post.title} - Image ${index + 1}`} loading="lazy" decoding="async" className="w-full h-64 sm:h-80 object-cover" />
                         <div className="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded-md">
                           {index + 1} / {existingImages.length}
                         </div>
@@ -345,10 +363,11 @@ export function PostItem({ post, currentUserId }: { post: any, currentUserId?: s
               variant="ghost"
               size="sm"
               className="gap-1.5 px-2 text-muted-foreground hover:text-foreground"
-              onClick={() => setShowComments(!showComments)}
+              onClick={handleToggleComments}
+              disabled={isLoadingComments}
             >
-              <MessageCircle className="h-4 w-4" />
-              <span className="text-xs font-medium">{post.comments?.length || 0} Comments</span>
+              {isLoadingComments ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageCircle className="h-4 w-4" />}
+              <span className="text-xs font-medium">{post._count?.comments || 0} Comments</span>
             </Button>
           </div>
 
@@ -356,7 +375,7 @@ export function PostItem({ post, currentUserId }: { post: any, currentUserId?: s
             <div className="w-full mt-6 pt-4 border-t border-border/40">
               <CommentSection 
                 postId={post.id} 
-                comments={post.comments || []} 
+                initialComments={comments} 
                 currentUserId={currentUserId} 
               />
             </div>

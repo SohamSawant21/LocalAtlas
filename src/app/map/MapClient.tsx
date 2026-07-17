@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { LocationData } from '@/types';
 import { Input } from '@/components/ui/input';
 import { MapPin, Search, List, Navigation } from 'lucide-react';
@@ -32,12 +32,14 @@ export function MapClient({ initialLocations: locations }: { initialLocations: L
     }
   }, [selectedLocationId]);
 
-  const filteredLocations = locations.filter(loc => {
-    const matchesSearch = loc.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesDistrict = selectedDistrict === 'ALL' || loc.district === selectedDistrict;
-    const matchesCategory = selectedCategory === 'ALL' || loc.category === selectedCategory;
-    return matchesSearch && matchesDistrict && matchesCategory;
-  });
+  const filteredLocations = useMemo(() => {
+    return locations.filter(loc => {
+      const matchesSearch = loc.name.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesDistrict = selectedDistrict === 'ALL' || loc.district === selectedDistrict;
+      const matchesCategory = selectedCategory === 'ALL' || loc.category === selectedCategory;
+      return matchesSearch && matchesDistrict && matchesCategory;
+    });
+  }, [locations, searchQuery, selectedDistrict, selectedCategory]);
 
   return (
     <div className="flex-1 flex flex-col-reverse md:flex-row overflow-hidden relative">

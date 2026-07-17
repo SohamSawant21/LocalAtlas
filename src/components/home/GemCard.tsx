@@ -3,6 +3,7 @@ import { MapPin, Star, Users } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
+import Image from 'next/image';
 
 interface GemCardProps {
   location: LocationData;
@@ -13,11 +14,12 @@ export function GemCard({ location }: GemCardProps) {
     <Link href={`/location/${location.slug}`}>
       <Card className="group overflow-hidden bg-card border-border hover:border-primary/50 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 h-full cursor-pointer rounded-2xl p-0">
         <div className="relative h-56 overflow-hidden">
-           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img 
+          <Image 
             src={location.images[0] || 'https://via.placeholder.com/400x300'} 
             alt={location.name}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
           />
           <div className="absolute top-4 right-4 flex gap-2">
             <Badge className="bg-background/80 backdrop-blur-sm text-foreground hover:bg-background/90 font-medium">

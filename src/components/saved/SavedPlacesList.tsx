@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { MapPin, Heart, ExternalLink, MoreVertical } from 'lucide-react';
 import { SaveButton } from '@/components/location/SaveButton';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export function SavedPlacesList({ locations, isAuthenticated = true }: { locations: any[], isAuthenticated?: boolean }) {
   if (locations.length === 0) {
@@ -26,10 +27,11 @@ export function SavedPlacesList({ locations, isAuthenticated = true }: { locatio
       {locations.map((location) => (
         <Card key={location.id} className="overflow-hidden group flex flex-col">
           <div className="relative h-48 overflow-hidden">
-            <img 
-              src={location.images[0]} 
+            <Image 
+              src={location.images[0] || 'https://via.placeholder.com/400x300'} 
               alt={location.name} 
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              fill
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
             />
             <div className="absolute top-3 right-3 flex gap-2">
               <SaveButton locationId={location.id} initialSaved={true} variant="icon" isAuthenticated={isAuthenticated} />

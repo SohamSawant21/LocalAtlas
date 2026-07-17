@@ -6,9 +6,15 @@ export const getTopGuides = unstable_cache(async (limit = 4) => {
     const users = await prisma.user.findMany({
       take: limit,
       orderBy: { reputation: 'desc' },
-      include: {
+      select: {
+        id: true,
+        name: true,
+        avatar: true,
+        bio: true,
+        location: true,
+        reputation: true,
         _count: {
-          select: { locations: true, followers: true, following: true, savedPlaces: true }
+          select: { locations: true, followers: true }
         }
       }
     });

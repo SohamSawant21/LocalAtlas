@@ -4,7 +4,12 @@ import { Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { LocationData } from "@/types";
-import { ShareLocationModal } from "@/components/share/ShareLocationModal";
+import dynamic from "next/dynamic";
+
+const ShareLocationModal = dynamic(
+  () => import("@/components/share/ShareLocationModal").then(mod => mod.ShareLocationModal),
+  { ssr: false }
+);
 
 interface ShareButtonProps {
   location: LocationData;
@@ -20,11 +25,13 @@ export function ShareButton({ location }: ShareButtonProps) {
         Share
       </Button>
 
-      <ShareLocationModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-        location={location} 
-      />
+      {isModalOpen && (
+        <ShareLocationModal 
+          isOpen={isModalOpen} 
+          onClose={() => setIsModalOpen(false)} 
+          location={location} 
+        />
+      )}
     </>
   );
 }

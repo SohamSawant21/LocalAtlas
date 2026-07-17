@@ -1,14 +1,17 @@
 import { Search, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import Image from 'next/image';
 
 export function Hero() {
   return (
     <section className="relative h-[600px] flex items-center justify-center overflow-hidden">
       <div className="absolute inset-0 bg-zinc-900">
-        <img 
+        <Image 
           src="/konkan_hero_bg.jpg" 
           alt="Hero Background" 
-          className="w-full h-full object-cover opacity-50"
+          fill
+          priority
+          className="object-cover opacity-50"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
       </div>

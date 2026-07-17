@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { LocationData } from '@/types';
 import { GemCard } from '@/components/shared/GemCard';
 import { Input } from '@/components/ui/input';
@@ -38,15 +38,17 @@ export function ExploreClient({ locations }: { locations: LocationData[] }) {
     }
   }, [searchParams]);
 
-  const filteredLocations = locations.filter(loc => {
-    const matchesSearch = loc.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          loc.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesDistrict = selectedDistrict === 'ALL' || loc.district === selectedDistrict;
-    const matchesCategory = selectedCategory === 'ALL' || loc.category === selectedCategory;
-    const matchesCrowd = selectedCrowd === 'ALL' || loc.crowdLevel === selectedCrowd;
-    
-    return matchesSearch && matchesDistrict && matchesCategory && matchesCrowd;
-  });
+  const filteredLocations = useMemo(() => {
+    return locations.filter(loc => {
+      const matchesSearch = loc.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                            loc.description.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesDistrict = selectedDistrict === 'ALL' || loc.district === selectedDistrict;
+      const matchesCategory = selectedCategory === 'ALL' || loc.category === selectedCategory;
+      const matchesCrowd = selectedCrowd === 'ALL' || loc.crowdLevel === selectedCrowd;
+      
+      return matchesSearch && matchesDistrict && matchesCategory && matchesCrowd;
+    });
+  }, [locations, searchQuery, selectedDistrict, selectedCategory, selectedCrowd]);
 
   return (
     <div className="min-h-screen bg-background pb-12">

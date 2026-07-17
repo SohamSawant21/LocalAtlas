@@ -9,10 +9,19 @@ export const getLocations = unstable_cache(async (params?: { category?: string; 
     const locations = await prisma.location.findMany({
       take: params?.limit,
       where: params?.category ? { category: params.category as LocationCategory } : undefined,
-      include: {
-        contributor: true,
-        photos: true,
-        reviews: true,
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        description: true,
+        district: true,
+        category: true,
+        latitude: true,
+        longitude: true,
+        hiddenScore: true,
+        crowdLevel: true,
+        difficulty: true,
+        images: true,
       },
       orderBy: { hiddenScore: 'desc' },
     });

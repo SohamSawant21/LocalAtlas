@@ -8,7 +8,10 @@ export const getLocations = unstable_cache(async (params?: { category?: string; 
   try {
     const locations = await prisma.location.findMany({
       take: params?.limit,
-      where: params?.category ? { category: params.category as LocationCategory } : undefined,
+      where: {
+        status: 'APPROVED',
+        ...(params?.category ? { category: params.category as LocationCategory } : {})
+      },
       select: {
         id: true,
         name: true,
@@ -119,7 +122,7 @@ export async function getNearbyLocations(lat: number, lng: number, radiusMeters:
       )
     ) AS distance
     FROM "locations"
-    WHERE status IN ('APPROVED', 'PENDING')
+    WHERE status = 'APPROVED'
     AND latitude IS NOT NULL 
     AND longitude IS NOT NULL
   `;

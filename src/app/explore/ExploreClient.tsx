@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { LocationData } from '@/types';
 import { GemCard } from '@/components/shared/GemCard';
 import { Input } from '@/components/ui/input';
-import { Search, Map, SlidersHorizontal } from 'lucide-react';
+import { Search, Map, SlidersHorizontal, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
@@ -73,10 +73,18 @@ export function ExploreClient({ locations }: { locations: LocationData[] }) {
             </div>
             
             <div className="flex gap-3">
+              <Button className="rounded-full shadow-sm gap-2" asChild>
+                <Link href="/contribute">
+                  <Plus className="w-4 h-4" />
+                  <span className="hidden sm:inline">Submit Location</span>
+                  <span className="sm:hidden">Submit</span>
+                </Link>
+              </Button>
               <Button variant="outline" className="rounded-full shadow-sm gap-2" asChild>
                 <Link href="/map">
                   <Map className="w-4 h-4" />
-                  Map View
+                  <span className="hidden sm:inline">Map View</span>
+                  <span className="sm:hidden">Map</span>
                 </Link>
               </Button>
               <Button variant="secondary" className="rounded-full shadow-sm gap-2 md:hidden">

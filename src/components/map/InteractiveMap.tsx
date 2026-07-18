@@ -1,15 +1,16 @@
 'use client';
 
 import React, { useEffect, useState, useMemo } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents, ZoomControl, Polyline, GeoJSON } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents, ZoomControl, GeoJSON } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import 'leaflet/dist/leaflet.css';
 import { LocationData } from '@/types';
 import { createCustomIcon } from '@/lib/maps/markers';
 import { useMapStore } from '@/store';
-import { MapPin, Navigation, Route as RouteIcon } from 'lucide-react';
+import { MapPin, Navigation } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
+import Link from 'next/link';
 import L from 'leaflet';
 import { MapControls } from './MapControls';
 import konkanData from '@/constants/konkan.json';
@@ -81,9 +82,7 @@ export default function InteractiveMap({ locations }: InteractiveMapProps) {
     selectedLocationId, 
     selectLocation,
     mapStyle,
-    currentLocation,
-    routeLocationIds,
-    toggleRouteLocation
+    currentLocation
   } = useMapStore();
   
   const tileUrl = mapStyle === 'terrain' 
@@ -94,19 +93,10 @@ export default function InteractiveMap({ locations }: InteractiveMapProps) {
     ? 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
     : 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community';
 
-  // Extract route coordinates
-  const routeCoordinates = useMemo(() => {
-    return routeLocationIds
-      .map(id => locations.find(loc => loc.id === id))
-      .filter((loc): loc is LocationData => loc !== undefined)
-      .map(loc => [loc.latitude, loc.longitude] as [number, number]);
-  }, [routeLocationIds, locations]);
-
   // Memoize markers to avoid unnecessary re-renders
   const markers = useMemo(() => {
     return locations.map(location => {
       const isSelected = selectedLocationId === location.id;
-      const inRoute = routeLocationIds.includes(location.id);
       const icon = createCustomIcon(location.category, isSelected);
       
       if (!icon) return null; // Handle SSR case if it ever reaches here
@@ -128,7 +118,7 @@ export default function InteractiveMap({ locations }: InteractiveMapProps) {
           zIndexOffset={isSelected ? 1000 : 0}
         >
           <Popup className="custom-popup" closeButton={false} minWidth={200}>
-            <div className="p-0 -m-3 max-w-[200px] overflow-hidden rounded-xl border-none shadow-lg bg-background flex flex-col max-h-[300px]">
+            <div className="w-[200px] overflow-hidden rounded-xl border-none shadow-lg bg-background flex flex-col max-h-[300px]">
               <div className="relative w-full h-24 shrink-0">
                 <Image 
                   src={location.images[0] || '/placeholder.jpg'} 
@@ -144,16 +134,14 @@ export default function InteractiveMap({ locations }: InteractiveMapProps) {
                   <span className="text-xs text-amber-500 font-semibold" aria-label={`Rating ${location.hiddenScore}`}>★ {location.hiddenScore}</span>
                   <Button 
                     size="sm" 
-                    variant={inRoute ? "default" : "outline"}
+                    variant="default"
                     className="h-6 text-[10px] px-2 rounded-full"
-                    aria-label={inRoute ? "Remove from route" : "Add to route"}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleRouteLocation(location.id);
-                    }}
+                    asChild
                   >
-                    <RouteIcon className="w-3 h-3 mr-1" aria-hidden="true" />
-                    {inRoute ? 'In Route' : 'Add to Route'}
+                    <Link href={`/location/${location.slug}`}>
+                      <Navigation className="w-3 h-3 mr-1" aria-hidden="true" />
+                      View Place
+                    </Link>
                   </Button>
                 </div>
               </div>
@@ -162,7 +150,7 @@ export default function InteractiveMap({ locations }: InteractiveMapProps) {
         </Marker>
       );
     });
-  }, [locations, selectedLocationId, selectLocation, routeLocationIds, toggleRouteLocation]);
+  }, [locations, selectedLocationId, selectLocation]);
 
   return (
     <div className="w-full h-full relative">
@@ -196,17 +184,6 @@ export default function InteractiveMap({ locations }: InteractiveMapProps) {
         <ZoomControl position="topright" />
         <MapEvents />
         <MapUpdater locations={locations} />
-        
-        {/* Route Preview */}
-        {routeCoordinates.length > 1 && (
-          <Polyline 
-            positions={routeCoordinates} 
-            color="hsl(var(--primary))" 
-            weight={4} 
-            dashArray="10, 10" 
-            opacity={0.8} 
-          />
-        )}
         
         {/* User Location */}
         {currentLocation && (

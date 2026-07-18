@@ -149,6 +149,20 @@ body {
 }
 
 /* ================================================================
+   LEAFLET CUSTOMIZATION
+   ================================================================ */
+.custom-popup .leaflet-popup-content-wrapper {
+  padding: 0 !important;
+  border-radius: 0.75rem !important; /* xl rounded */
+  overflow: hidden !important;
+}
+
+.custom-popup .leaflet-popup-content {
+  margin: 0 !important;
+  width: auto !important;
+}
+
+/* ================================================================
    MATERIAL SYMBOLS
    ================================================================ */
 .material-symbols-outlined {

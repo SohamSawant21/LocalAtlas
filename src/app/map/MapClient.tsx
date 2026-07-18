@@ -7,7 +7,6 @@ import { MapPin, Search, List, Navigation } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { District, LocationCategory } from '@/types';
 import Image from 'next/image';
 import { Map } from '@/components/map/Map';
@@ -97,7 +96,7 @@ export function MapClient({ initialLocations: locations }: { initialLocations: L
           </p>
         </div>
 
-        <ScrollArea className="flex-1">
+        <div className="flex-1 overflow-y-auto overscroll-contain">
           <div className="p-4 space-y-4">
             {filteredLocations.map(location => {
               const isSelected = selectedLocationId === location.id;
@@ -150,7 +149,7 @@ export function MapClient({ initialLocations: locations }: { initialLocations: L
               );
             })}
           </div>
-        </ScrollArea>
+        </div>
       </div>
 
       {/* Map Canvas */}

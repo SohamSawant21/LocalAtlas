@@ -36,17 +36,10 @@ export const authConfig = {
         token.id = user.id;
         token.role = user.role;
         
-        const avatar = (user as any).avatar;
-        if (avatar && avatar.startsWith('data:image')) {
-          token.image = `/api/avatar/${user.id}`;
-        } else {
-          token.image = avatar;
-        }
+        token.image = (user as any).avatar;
       }
       if (trigger === 'update' && session) {
-        if (session.image && session.image.startsWith('data:image')) {
-          token.image = `/api/avatar/${token.id}`;
-        } else if (session.image === null) {
+        if (session.image === null) {
           token.image = undefined;
         } else if (session.image) {
           token.image = session.image;

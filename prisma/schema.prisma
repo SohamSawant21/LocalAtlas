@@ -4,7 +4,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 enum UserRole {
@@ -114,6 +113,11 @@ model User {
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
+  // Moderation
+  isBanned       Boolean   @default(false)
+  isShadowbanned Boolean   @default(false)
+  suspendedUntil DateTime?
+
   // Settings
   emailNotifications Boolean  @default(true)
   pushNotifications  Boolean  @default(false)
@@ -140,6 +144,8 @@ model User {
   pollVotes      PollVote[]
   followers      Follow[]  @relation("following")
   following      Follow[]  @relation("follower")
+  reports        Report[]  @relation("reportReporter")
+  moderatorLogs  ModeratorActionLog[] @relation("moderatorAction")
 
   @@index([reputation])
   @@map("users")
@@ -520,4 +526,52 @@ model Verification {
 
   @@unique([userId, locationId])
   @@map("verifications")
+}
+
+enum ReportType {
+  POST
+  COMMENT
+  REVIEW
+  STORY
+  LOCATION
+  USER
+}
+
+enum ReportStatus {
+  PENDING
+  RESOLVED
+  DISMISSED
+}
+
+model Report {
+  id          String       @id @default(cuid())
+  reporterId  String
+  type        ReportType
+  reason      String       @db.Text
+  status      ReportStatus @default(PENDING)
+  targetId    String
+  notes       String?      @db.Text
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  reporter    User         @relation("reportReporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  
+  @@index([status])
+  @@index([targetId])
+  @@map("reports")
+}
+
+model ModeratorActionLog {
+  id          String   @id @default(cuid())
+  moderatorId String
+  action      String
+  targetId    String?
+  targetType  String?
+  details     String?  @db.Text
+  createdAt   DateTime @default(now())
+
+  moderator   User     @relation("moderatorAction", fields: [moderatorId], references: [id], onDelete: Cascade)
+  
+  @@index([moderatorId, createdAt])
+  @@map("moderator_action_logs")
 }

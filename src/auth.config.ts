@@ -1,45 +1,12 @@
 import { NextAuthConfig } from 'next-auth';
-import CredentialsProvider from 'next-auth/providers/credentials';
-import GoogleProvider from 'next-auth/providers/google';
-import { z } from 'zod';
-import bcrypt from 'bcryptjs';
-import prisma from '@/lib/prisma';
+
 
 export const authConfig = {
   pages: {
     signIn: '/sign-in',
     error: '/sign-in', // Error code passed in query string as ?error=
   },
-  providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    }),
-    CredentialsProvider({
-      name: 'Credentials',
-      credentials: {
-        email: { label: 'Email', type: 'email' },
-        password: { label: 'Password', type: 'password' },
-      },
-      async authorize(credentials) {
-        const parsedCredentials = z
-          .object({ email: z.string().email(), password: z.string().min(6) })
-          .safeParse(credentials);
-
-        if (parsedCredentials.success) {
-          const { email, password } = parsedCredentials.data;
-          
-          const user = await prisma.user.findUnique({ where: { email } });
-          if (!user || !user.password) return null;
-
-          const passwordsMatch = await bcrypt.compare(password, user.password);
-          if (passwordsMatch) return user;
-        }
-
-        return null;
-      },
-    }),
-  ],
+  providers: [],
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;

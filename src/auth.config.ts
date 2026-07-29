@@ -39,7 +39,7 @@ export const authConfig = {
         // Prevent huge base64 avatars from blowing up the JWT cookie size
         const avatar = (user as any).avatar;
         if (avatar && avatar.length > 2000) {
-          token.image = null; // Don't store large base64 strings in the cookie
+          token.image = `/api/users/${user.id}/avatar`; // Serve via API endpoint
         } else {
           token.image = avatar;
         }
@@ -49,7 +49,7 @@ export const authConfig = {
           token.image = undefined;
         } else if (session.image) {
           if (session.image.length > 2000) {
-            token.image = undefined;
+            token.image = `/api/users/${token.id}/avatar`;
           } else {
             token.image = session.image;
           }

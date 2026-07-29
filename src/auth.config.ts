@@ -36,13 +36,23 @@ export const authConfig = {
         token.id = user.id;
         token.role = user.role;
         
-        token.image = (user as any).avatar;
+        // Prevent huge base64 avatars from blowing up the JWT cookie size
+        const avatar = (user as any).avatar;
+        if (avatar && avatar.length > 2000) {
+          token.image = null; // Don't store large base64 strings in the cookie
+        } else {
+          token.image = avatar;
+        }
       }
       if (trigger === 'update' && session) {
         if (session.image === null) {
           token.image = undefined;
         } else if (session.image) {
-          token.image = session.image;
+          if (session.image.length > 2000) {
+            token.image = undefined;
+          } else {
+            token.image = session.image;
+          }
         }
         
         // Merge the rest of the session if there's any other fields like name

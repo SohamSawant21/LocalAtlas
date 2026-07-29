@@ -34,7 +34,7 @@ export function CreatePostForm({ currentUserId }: { currentUserId?: string }) {
       if (locationSearch.length >= 2 && !selectedLocation) {
         setIsSearchingLocation(true);
         const res = await searchLocationsAction(locationSearch);
-        if (res.success) setLocationResults(res.data);
+        if (res.success && res.data) setLocationResults(res.data);
         setIsSearchingLocation(false);
       } else {
         setLocationResults([]);
@@ -124,7 +124,7 @@ export function CreatePostForm({ currentUserId }: { currentUserId?: string }) {
         title,
         content,
         imageUrls,
-        category,
+        category: category as any,
         locationId: selectedLocation?.id,
         pollOptions: showPoll ? validPollOptions : undefined,
       };

@@ -10,7 +10,6 @@ export async function exportComponentAsPNG(element: HTMLElement, options: Export
     const dataUrl = await toPng(element, {
       quality: 1.0,
       pixelRatio: options.pixelRatio || 2,
-      useCORS: true,
       backgroundColor: 'transparent',
     });
 

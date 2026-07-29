@@ -4,7 +4,7 @@ import { auth } from '@/auth';
 import { z } from 'zod';
 import { createLocation, updateLocationStatus, updateLocation } from '@/services/location';
 import { ActionResponse } from '@/types';
-import { revalidatePath, revalidateTag } from 'next/cache';
+import { revalidatePath, updateTag } from 'next/cache';
 import { LocationStatus } from '@prisma/client';
 
 const contributionSchema = z.object({
@@ -127,8 +127,8 @@ export async function editLocationAction(data: z.infer<typeof editLocationSchema
     revalidatePath('/explore');
     revalidatePath('/profile');
     revalidatePath(`/location/${result.slug}`, 'page');
-    revalidateTag('locations');
-    revalidateTag('location');
+    updateTag('locations');
+    updateTag('location');
     
     return { success: true, data: result };
   } catch (error: any) {

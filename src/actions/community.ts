@@ -66,7 +66,7 @@ export async function createCommunityPostAction(data: z.infer<typeof createPostS
 
     const parsed = createPostSchema.safeParse(data);
     if (!parsed.success) {
-      return { success: false, error: { code: 'BAD_REQUEST', message: parsed.error.errors[0].message } };
+      return { success: false, error: { code: 'BAD_REQUEST', message: parsed.error.issues[0].message } };
     }
 
     const { title, content, imageUrls, category, locationId, pollOptions } = parsed.data;
@@ -203,7 +203,7 @@ export async function createCommunityCommentAction(data: z.infer<typeof createCo
 
     const parsed = createCommentSchema.safeParse(data);
     if (!parsed.success) {
-      return { success: false, error: { code: 'BAD_REQUEST', message: parsed.error.errors[0].message } };
+      return { success: false, error: { code: 'BAD_REQUEST', message: parsed.error.issues[0].message } };
     }
 
     const comment = await prisma.comment.create({
@@ -393,7 +393,7 @@ export async function updateCommunityPostAction(data: z.infer<typeof updatePostS
 
     const parsed = updatePostSchema.safeParse(data);
     if (!parsed.success) {
-      return { success: false, error: { code: 'BAD_REQUEST', message: parsed.error.errors[0].message } };
+      return { success: false, error: { code: 'BAD_REQUEST', message: parsed.error.issues[0].message } };
     }
 
     const post = await prisma.communityPost.findUnique({
@@ -438,7 +438,7 @@ export async function deleteCommunityPostAction(data: z.infer<typeof deletePostS
 
     const parsed = deletePostSchema.safeParse(data);
     if (!parsed.success) {
-      return { success: false, error: { code: 'BAD_REQUEST', message: parsed.error.errors[0].message } };
+      return { success: false, error: { code: 'BAD_REQUEST', message: parsed.error.issues[0].message } };
     }
 
     const post = await prisma.communityPost.findUnique({
@@ -477,7 +477,7 @@ export async function deleteCommunityCommentAction(data: z.infer<typeof deleteCo
 
     const parsed = deleteCommentSchema.safeParse(data);
     if (!parsed.success) {
-      return { success: false, error: { code: 'BAD_REQUEST', message: parsed.error.errors[0].message } };
+      return { success: false, error: { code: 'BAD_REQUEST', message: parsed.error.issues[0].message } };
     }
 
     const comment = await prisma.comment.findUnique({

@@ -216,7 +216,7 @@ export function ContributionForm() {
               <LocationPickerMap
                 latitude={formData.latitude || 0}
                 longitude={formData.longitude || 0}
-                onChange={(lat, lng, addressDetails) => {
+                onChange={(lat, lng, addressDetails: any) => {
                   const updates: Partial<any> = { latitude: lat, longitude: lng };
                   if (addressDetails) {
                     const district = (addressDetails.state_district || addressDetails.county || '').toUpperCase();

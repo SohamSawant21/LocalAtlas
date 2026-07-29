@@ -22,7 +22,7 @@ const InteractiveLocationPickerMap = dynamic(
 interface LocationPickerMapProps {
   latitude: number;
   longitude: number;
-  onChange: (lat: number, lng: number, address?: string) => void;
+  onChange: (lat: number, lng: number, addressDetails?: any) => void;
   category?: LocationCategory;
 }
 

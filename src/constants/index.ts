@@ -10,7 +10,7 @@ export const NAV_LINKS = [
   { label: 'Explore', href: '/explore', icon: 'explore' },
   { label: 'Map', href: '/map', icon: 'map' },
   { label: 'Community', href: '/community', icon: 'group' },
-  { label: 'Stories', href: '/stories', icon: 'auto_stories' },
+  // { label: 'Stories', href: '/stories', icon: 'auto_stories' },
 ] as const;
 
 export const BOTTOM_NAV_LINKS = [

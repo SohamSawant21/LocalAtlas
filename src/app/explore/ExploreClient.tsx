@@ -16,8 +16,9 @@ const CROWD_LEVELS: CrowdLevel[] = ['VERY_LOW', 'LOW', 'MEDIUM', 'HIGH'];
 
 import { useSearchParams } from 'next/navigation';
 
-export function ExploreClient({ locations }: { locations: LocationData[] }) {
+export function ExploreClient({ locations, savedLocationIds = [] }: { locations: LocationData[], savedLocationIds?: string[] }) {
   const searchParams = useSearchParams();
+  const savedIdsSet = useMemo(() => new Set(savedLocationIds), [savedLocationIds]);
   
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDistrict, setSelectedDistrict] = useState<District | 'ALL'>('ALL');
@@ -173,7 +174,7 @@ export function ExploreClient({ locations }: { locations: LocationData[] }) {
         {filteredLocations.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredLocations.map(location => (
-              <GemCard key={location.id} location={location} />
+              <GemCard key={location.id} location={location} initialIsSaved={savedIdsSet.has(location.id)} />
             ))}
           </div>
         ) : (

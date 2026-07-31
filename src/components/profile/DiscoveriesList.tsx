@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { LocationData } from '@/types';
 import { GemCard } from '@/components/shared/GemCard';
 import { EditDiscoveryDialog } from '@/components/profile/EditDiscoveryDialog';
@@ -9,10 +9,12 @@ import { Navigation } from 'lucide-react';
 interface DiscoveriesListProps {
   locations: LocationData[];
   currentUserId?: string | null;
+  savedLocationIds?: string[];
 }
 
-export function DiscoveriesList({ locations, currentUserId }: DiscoveriesListProps) {
+export function DiscoveriesList({ locations, currentUserId, savedLocationIds = [] }: DiscoveriesListProps) {
   const [editingLocation, setEditingLocation] = useState<LocationData | null>(null);
+  const savedIdsSet = useMemo(() => new Set(savedLocationIds), [savedLocationIds]);
 
   if (locations.length === 0) {
     return (
@@ -34,6 +36,7 @@ export function DiscoveriesList({ locations, currentUserId }: DiscoveriesListPro
             key={loc.id} 
             location={loc}
             isEditable={currentUserId === loc.userId}
+            initialIsSaved={savedIdsSet.has(loc.id)}
             onEditClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -55,3 +58,4 @@ export function DiscoveriesList({ locations, currentUserId }: DiscoveriesListPro
     </>
   );
 }
+

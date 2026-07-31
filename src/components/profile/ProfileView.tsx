@@ -8,16 +8,19 @@ import { DiscoveriesList } from '@/components/profile/DiscoveriesList';
 import { FollowButton } from '@/components/profile/FollowButton';
 import { PostItem } from '@/components/community/PostItem';
 import Link from 'next/link';
+import { useMemo } from 'react';
 
 interface ProfileViewProps {
   user: User;
   locations: LocationData[];
   currentUserId?: string | null;
   isFollowing?: boolean;
+  savedLocationIds?: string[];
 }
 
-export function ProfileView({ user, locations, currentUserId, isFollowing = false }: ProfileViewProps) {
+export function ProfileView({ user, locations, currentUserId, isFollowing = false, savedLocationIds = [] }: ProfileViewProps) {
   const joinDate = user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'Unknown';
+  const savedIdsSet = useMemo(() => new Set(savedLocationIds), [savedLocationIds]);
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-12 max-w-5xl">
@@ -121,7 +124,7 @@ export function ProfileView({ user, locations, currentUserId, isFollowing = fals
         </TabsList>
 
         <TabsContent value="discoveries" className="mt-6">
-          <DiscoveriesList locations={locations} currentUserId={currentUserId} />
+          <DiscoveriesList locations={locations} currentUserId={currentUserId} savedLocationIds={savedLocationIds} />
         </TabsContent>
 
         <TabsContent value="saved" className="mt-6 space-y-12">
@@ -134,7 +137,7 @@ export function ProfileView({ user, locations, currentUserId, isFollowing = fals
             {(user as any).savedPlaces && (user as any).savedPlaces.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {(user as any).savedPlaces.map((sp: any) => (
-                  <GemCard key={sp.location.id} location={sp.location} />
+                  <GemCard key={sp.location.id} location={sp.location} initialIsSaved={savedIdsSet.has(sp.location.id)} />
                 ))}
               </div>
             ) : (
@@ -181,3 +184,4 @@ export function ProfileView({ user, locations, currentUserId, isFollowing = fals
     </div>
   );
 }
+

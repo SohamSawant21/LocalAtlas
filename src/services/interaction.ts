@@ -2,6 +2,14 @@ import prisma from '@/lib/prisma';
 import { createNotification } from './notification';
 import { recalculateUserReputation } from './reputation';
 
+export async function getSavedLocationIds(userId: string): Promise<Set<string>> {
+  const savedPlaces = await prisma.savedPlace.findMany({
+    where: { userId },
+    select: { locationId: true }
+  });
+  return new Set(savedPlaces.map(sp => sp.locationId));
+}
+
 export async function toggleSavePlace(userId: string, locationId: string) {
   const existingSave = await prisma.savedPlace.findFirst({
     where: { userId, locationId },

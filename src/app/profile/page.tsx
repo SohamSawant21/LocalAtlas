@@ -2,6 +2,7 @@ import { getUserProfile } from '@/services/user';
 import { ProfileView } from '@/components/profile/ProfileView';
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
+import { getSavedLocationIds } from '@/services/interaction';
 
 export default async function CurrentUserProfilePage() {
   const session = await auth();
@@ -14,10 +15,13 @@ export default async function CurrentUserProfilePage() {
   
   if (!user) return null;
   
+  const savedLocationIds = await getSavedLocationIds(currentUserId);
+  
   return <ProfileView 
     user={user as any} 
     locations={((user as any).locations || []) as any} 
     currentUserId={currentUserId}
     isFollowing={false}
+    savedLocationIds={Array.from(savedLocationIds)}
   />;
 }

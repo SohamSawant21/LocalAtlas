@@ -5,8 +5,8 @@ import Link from 'next/link';
 import { LocationData } from '@/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, Users, TrendingUp, Navigation, Loader2, Heart, Star } from 'lucide-react';
-import { useOptimistic, useTransition, useState } from 'react';
+import { MapPin, Users, TrendingUp, Navigation, Loader2, Bookmark, Star } from 'lucide-react';
+import { useOptimistic, useTransition, useState, useEffect } from 'react';
 import { toggleSaveAction } from '@/actions/interactions';
 import { toast } from 'sonner';
 import { Edit } from 'lucide-react';
@@ -15,11 +15,16 @@ interface GemCardProps {
   location: LocationData;
   isEditable?: boolean;
   onEditClick?: (e: React.MouseEvent) => void;
+  initialIsSaved?: boolean;
 }
 
-export function GemCard({ location, isEditable, onEditClick }: GemCardProps) {
-  // Temporary simplified optimistic state for demo, ideally passed from parent
-  const [isSaved, setIsSaved] = useState(false);
+export function GemCard({ location, isEditable, onEditClick, initialIsSaved = false }: GemCardProps) {
+  const [isSaved, setIsSaved] = useState(initialIsSaved);
+  
+  useEffect(() => {
+    setIsSaved(initialIsSaved);
+  }, [initialIsSaved]);
+
   const [optimisticSaved, addOptimisticSaved] = useOptimistic(
     isSaved,
     (state, newSaved: boolean) => newSaved
@@ -67,9 +72,9 @@ export function GemCard({ location, isEditable, onEditClick }: GemCardProps) {
           <div className="absolute bottom-3 left-3">
             <button 
               onClick={handleSave}
-              className={`w-8 h-8 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center transition-colors ${optimisticSaved ? 'text-red-500' : 'text-on-surface hover:text-primary hover:bg-white'}`}
+              className={`w-8 h-8 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center transition-colors ${optimisticSaved ? 'text-primary' : 'text-on-surface hover:text-primary hover:bg-white'}`}
             >
-              <Heart className={`w-5 h-5 ${optimisticSaved ? 'fill-current' : ''}`} />
+              <Bookmark className={`w-5 h-5 ${optimisticSaved ? 'fill-current' : ''}`} />
             </button>
           </div>
           {isEditable && onEditClick && (

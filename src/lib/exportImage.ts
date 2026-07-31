@@ -11,6 +11,7 @@ export async function exportComponentAsPNG(element: HTMLElement, options: Export
       quality: 1.0,
       pixelRatio: options.pixelRatio || 2,
       backgroundColor: 'transparent',
+      useCORS: true,
     });
 
     const link = document.createElement('a');

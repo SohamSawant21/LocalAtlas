@@ -22,11 +22,10 @@ export const LocationShareCard = React.forwardRef<HTMLDivElement, LocationShareC
         <div className="relative w-full h-[60%]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img 
-            src={location.images[0] || '/placeholder.jpg'} 
+            src={location.images[0] ? `${location.images[0]}?t=${Date.now()}` : '/placeholder.jpg'} 
             alt={location.name}
             className="object-cover w-full h-full"
-            // Removed crossOrigin="anonymous" to fix the preview loading issue.
-            // html-to-image with useCORS: true will handle cors when exporting.
+            crossOrigin="anonymous"
           />
         </div>
 

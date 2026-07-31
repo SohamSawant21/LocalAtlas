@@ -95,6 +95,7 @@ export default async function CommunityPage(props: { searchParams: Promise<{ cat
                 Community Feed
               </h2>
               <PostList 
+                key={filter}
                 initialPosts={posts} 
                 initialNextCursor={nextCursor} 
                 currentUserId={currentUserId}

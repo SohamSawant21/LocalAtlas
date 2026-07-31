@@ -274,13 +274,16 @@ export async function toggleCommunityLikeAction(data: z.infer<typeof toggleLikeS
   }
 }
 
-export async function fetchCommunityPosts(cursor?: string, limit: number = 10, category?: PostCategory) {
+export async function fetchCommunityPosts(cursor?: string, limit: number = 10, category?: PostCategory, locationId?: string) {
   try {
     const session = await auth();
     const userId = session?.user?.id;
 
     const posts = await prisma.communityPost.findMany({
-      where: category ? { category } : undefined,
+      where: {
+        ...(category ? { category } : {}),
+        ...(locationId ? { locationId } : {})
+      },
       take: limit + 1,
       ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
       orderBy: { createdAt: 'desc' },

@@ -5,11 +5,13 @@ import { ReviewSection } from '@/components/location/ReviewSection';
 import { SaveButton } from '@/components/location/SaveButton';
 import { ShareButton } from '@/components/location/ShareButton';
 import { LocationGallery } from '@/components/location/LocationGallery';
+import { LocalTipsSection } from '@/components/location/LocalTipsSection';
 import prisma from '@/lib/prisma';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MapPin, Star, Share2, Bookmark, CheckCircle, Navigation, Info, Mountain, Calendar, AlertTriangle } from 'lucide-react';
+import { fetchCommunityPosts } from '@/actions/community';
 
 interface LocationPageProps {
   params: Promise<{
@@ -32,6 +34,9 @@ export default async function LocationPage({ params }: LocationPageProps) {
         where: { userId: session.user.id, locationId: location.id }
       }) !== null
     : false;
+
+  const tipsRes = await fetchCommunityPosts(undefined, 20, 'TRAVEL_TIP', location.id);
+  const initialTips = tipsRes.posts || [];
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-12 max-w-7xl">
@@ -146,29 +151,14 @@ export default async function LocationPage({ params }: LocationPageProps) {
             </TabsContent>
             
             <TabsContent value="tips">
-              <div className="space-y-4">
-                {location.safety && (
-                  <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-5 flex gap-4">
-                    <AlertTriangle className="w-6 h-6 text-yellow-600 dark:text-yellow-500 shrink-0 mt-0.5" />
-                    <div>
-                      <h4 className="font-semibold text-yellow-800 dark:text-yellow-400">Safety Tip</h4>
-                      <p className="text-sm text-yellow-800/80 dark:text-yellow-400/80 mt-1 leading-relaxed">{location.safety}</p>
-                    </div>
-                  </div>
-                )}
-                {location.bestTime && (
-                  <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-5 flex gap-4">
-                    <Info className="w-6 h-6 text-blue-600 dark:text-blue-500 shrink-0 mt-0.5" />
-                    <div>
-                      <h4 className="font-semibold text-blue-800 dark:text-blue-400">Best Time to Visit</h4>
-                      <p className="text-sm text-blue-800/80 dark:text-blue-400/80 mt-1 leading-relaxed">{location.bestTime}</p>
-                    </div>
-                  </div>
-                )}
-                {!location.safety && !location.bestTime && (
-                  <p className="text-muted-foreground text-center py-8">No specific local tips available for this location yet.</p>
-                )}
-              </div>
+              <LocalTipsSection 
+                locationId={location.id}
+                initialTips={initialTips}
+                currentUserId={session?.user?.id}
+                isAuthenticated={!!session?.user}
+                legacySafety={location.safety}
+                legacyBestTime={location.bestTime}
+              />
             </TabsContent>
           </Tabs>
         </div>

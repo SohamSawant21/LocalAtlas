@@ -5,30 +5,49 @@ import { PostList } from "@/components/community/PostList";
 import { Users, Info, Flame, MapPin } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
+import { PostCategory } from '@prisma/client';
 
 export const dynamic = 'force-dynamic';
 
 const CATEGORIES = [
-  { value: "ALL", label: "All" },
-  { value: "QUESTION", label: "Questions" },
+  { value: "ALL", label: "All Discussions" },
   { value: "PHOTO", label: "Photos" },
-  { value: "TRAVEL_TIP", label: "Tips" },
-  { value: "ROUTE_UPDATE", label: "Updates" },
-  { value: "FESTIVAL", label: "Festivals" },
-  { value: "FOOD", label: "Food" },
-  { value: "HERITAGE", label: "Heritage" },
   { value: "PLACE_RECOMMENDATION", label: "Nearby" },
+  { value: "QUESTION", label: "Questions" },
+  { value: "MEETUP", label: "Meetups" },
+  { value: "TIPS_ALERTS", label: "Tips & Alerts" },
 ];
 
 export default async function CommunityPage(props: { searchParams: Promise<{ category?: string }> }) {
   const searchParams = await props.searchParams;
-  const categoryFilter = searchParams.category;
+  const filter = searchParams.category || "ALL";
   
-  const VALID_CATEGORIES = ['PLACE_RECOMMENDATION', 'QUESTION', 'PHOTO', 'TRAVEL_TIP', 'ALERT', 'FESTIVAL', 'ROUTE_UPDATE', 'FOOD', 'HERITAGE', 'MEETUP'];
-  const isValidCategory = categoryFilter && VALID_CATEGORIES.includes(categoryFilter);
+  let categoryParam: PostCategory | PostCategory[] | undefined = undefined;
+  let excludeCategories: PostCategory[] | undefined = undefined;
+
+  if (filter === "ALL") {
+    excludeCategories = ['TRAVEL_TIP', 'ALERT', 'ROUTE_UPDATE'];
+  } else if (filter === "TIPS_ALERTS") {
+    categoryParam = ['TRAVEL_TIP', 'ALERT', 'ROUTE_UPDATE'];
+  } else {
+    // Basic validation for direct enum match
+    const VALID_CATEGORIES = ['PLACE_RECOMMENDATION', 'QUESTION', 'PHOTO', 'FESTIVAL', 'FOOD', 'HERITAGE', 'MEETUP'];
+    if (VALID_CATEGORIES.includes(filter)) {
+      categoryParam = filter as PostCategory;
+    } else {
+      // Fallback if invalid
+      excludeCategories = ['TRAVEL_TIP', 'ALERT', 'ROUTE_UPDATE'];
+    }
+  }
   
-  // Note: we can just pass categoryFilter as any to fetchCommunityPosts
-  const { posts, nextCursor } = await fetchCommunityPosts(undefined, 10, isValidCategory ? (categoryFilter as any) : undefined);
+  const { posts, nextCursor } = await fetchCommunityPosts(
+    undefined, 
+    10, 
+    categoryParam,
+    undefined,
+    excludeCategories
+  );
+  
   const trendingRes = await fetchTrendingPlacesAction();
   const trendingPlaces = trendingRes.success ? trendingRes.data : [];
   
@@ -47,7 +66,7 @@ export default async function CommunityPage(props: { searchParams: Promise<{ cat
           {/* Quick Filters */}
           <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
             {CATEGORIES.map((cat) => {
-              const isActive = (cat.value === "ALL" && !isValidCategory) || cat.value === categoryFilter;
+              const isActive = (filter === cat.value) || (!searchParams.category && cat.value === "ALL");
               return (
                 <Link
                   key={cat.value}
@@ -79,7 +98,8 @@ export default async function CommunityPage(props: { searchParams: Promise<{ cat
                 initialPosts={posts} 
                 initialNextCursor={nextCursor} 
                 currentUserId={currentUserId}
-                categoryFilter={isValidCategory ? (categoryFilter as any) : undefined}
+                categoryParam={categoryParam}
+                excludeCategories={excludeCategories}
               />
             </div>
           </div>

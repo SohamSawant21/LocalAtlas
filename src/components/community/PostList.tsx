@@ -5,8 +5,21 @@ import { PostItem } from './PostItem';
 import { Button } from '@/components/ui/button';
 import { fetchCommunityPosts } from '@/actions/community';
 import { Loader2 } from 'lucide-react';
+import { PostCategory } from '@prisma/client';
 
-export function PostList({ initialPosts, initialNextCursor, currentUserId, categoryFilter }: { initialPosts: any[], initialNextCursor?: string, currentUserId?: string, categoryFilter?: any }) {
+export function PostList({ 
+  initialPosts, 
+  initialNextCursor, 
+  currentUserId, 
+  categoryParam,
+  excludeCategories
+}: { 
+  initialPosts: any[], 
+  initialNextCursor?: string, 
+  currentUserId?: string, 
+  categoryParam?: PostCategory | PostCategory[],
+  excludeCategories?: PostCategory[] 
+}) {
   const [posts, setPosts] = useState(initialPosts || []);
   const [nextCursor, setNextCursor] = useState(initialNextCursor);
   const [isLoading, setIsLoading] = useState(false);
@@ -15,7 +28,13 @@ export function PostList({ initialPosts, initialNextCursor, currentUserId, categ
     if (!nextCursor || isLoading) return;
     setIsLoading(true);
     try {
-      const res = await fetchCommunityPosts(nextCursor, 10, categoryFilter);
+      const res = await fetchCommunityPosts(
+        nextCursor, 
+        10, 
+        categoryParam,
+        undefined, // locationId
+        excludeCategories
+      );
       setPosts(prev => [...prev, ...res.posts]);
       setNextCursor(res.nextCursor);
     } catch (error) {
@@ -49,3 +68,4 @@ export function PostList({ initialPosts, initialNextCursor, currentUserId, categ
     </div>
   );
 }
+

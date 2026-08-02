@@ -8,6 +8,7 @@ import { updateTripLocationsOrderAction, updateTripLocationNotesAction } from '@
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { TripMap } from './TripMap';
 
 interface TripItineraryListProps {
   tripId: string;
@@ -61,58 +62,69 @@ export function TripItineraryList({ tripId, initialLocations }: TripItineraryLis
   };
 
   return (
-    <DragDropContext onDragEnd={handleDragEnd}>
-      <Droppable droppableId="trip-locations">
-        {(provided) => (
-          <div
-            {...provided.droppableProps}
-            ref={provided.innerRef}
-            className="space-y-4 max-w-3xl"
-          >
-            {locations.map((tripLoc, index) => (
-              <Draggable key={tripLoc.id} draggableId={tripLoc.id} index={index}>
-                {(provided, snapshot) => (
-                  <div
-                    ref={provided.innerRef}
-                    {...provided.draggableProps}
-                    className={`bg-card border rounded-2xl p-4 flex gap-4 ${
-                      snapshot.isDragging ? 'shadow-lg ring-2 ring-primary/20' : 'shadow-sm'
-                    }`}
-                  >
-                    <div
-                      {...provided.dragHandleProps}
-                      className="flex items-center justify-center cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground p-2 -ml-2 rounded-lg hover:bg-muted/50 transition-colors"
-                    >
-                      <GripVertical className="w-5 h-5" />
-                    </div>
-                    
-                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center shadow-sm border border-primary/20 self-start mt-1">
-                      {index + 1}
-                    </div>
-                    
-                    <div className="flex-grow min-w-0">
-                      <div className="flex items-center gap-2 mb-2 text-sm font-medium text-muted-foreground">
-                        <MapPin className="w-4 h-4" />
-                        <span className="truncate">{tripLoc.location.name}</span>
+    <div className="flex flex-col lg:flex-row gap-8">
+      <div className="w-full lg:w-1/2 xl:w-5/12">
+        <DragDropContext onDragEnd={handleDragEnd}>
+          <Droppable droppableId="trip-locations">
+            {(provided) => (
+              <div
+                {...provided.droppableProps}
+                ref={provided.innerRef}
+                className="space-y-4"
+              >
+                {locations.map((tripLoc, index) => (
+                  <Draggable key={tripLoc.id} draggableId={tripLoc.id} index={index}>
+                    {(provided, snapshot) => (
+                      <div
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        className={`bg-card border rounded-2xl p-4 flex gap-4 ${
+                          snapshot.isDragging ? 'shadow-lg ring-2 ring-primary/20' : 'shadow-sm'
+                        }`}
+                      >
+                        <div
+                          {...provided.dragHandleProps}
+                          className="flex items-center justify-center cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground p-2 -ml-2 rounded-lg hover:bg-muted/50 transition-colors"
+                        >
+                          <GripVertical className="w-5 h-5" />
+                        </div>
+                        
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center shadow-sm border border-primary/20 self-start mt-1">
+                          {index + 1}
+                        </div>
+                        
+                        <div className="flex-grow min-w-0">
+                          <div className="flex items-center gap-2 mb-2 text-sm font-medium text-muted-foreground">
+                            <MapPin className="w-4 h-4" />
+                            <span className="truncate">{tripLoc.location.name}</span>
+                          </div>
+                          
+                          <div className="max-w-[280px] sm:max-w-[320px] lg:max-w-full">
+                            <GemCard location={tripLoc.location as any} />
+                          </div>
+                          
+                          <div className="mt-4">
+                            <NotesEditor tripId={tripId} tripLocationId={tripLoc.id} initialNotes={tripLoc.notes || ''} />
+                          </div>
+                        </div>
                       </div>
-                      
-                      <div className="max-w-[280px] sm:max-w-[320px]">
-                        <GemCard location={tripLoc.location as any} />
-                      </div>
-                      
-                      <div className="mt-4">
-                        <NotesEditor tripId={tripId} tripLocationId={tripLoc.id} initialNotes={tripLoc.notes || ''} />
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </Draggable>
-            ))}
-            {provided.placeholder}
-          </div>
-        )}
-      </Droppable>
-    </DragDropContext>
+                    )}
+                  </Draggable>
+                ))}
+                {provided.placeholder}
+              </div>
+            )}
+          </Droppable>
+        </DragDropContext>
+      </div>
+      
+      {/* Map View */}
+      <div className="w-full lg:w-1/2 xl:w-7/12 mt-8 lg:mt-0 relative">
+        <div className="sticky top-24 rounded-2xl overflow-hidden shadow-lg border h-[60vh] min-h-[400px] lg:h-[calc(100vh-140px)]">
+          <TripMap locations={locations} />
+        </div>
+      </div>
+    </div>
   );
 }
 

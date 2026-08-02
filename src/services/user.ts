@@ -58,6 +58,15 @@ export const getUserProfile = async (id: string) => {
           }
         },
         userBadges: { include: { badge: true } },
+        trips: {
+          orderBy: { updatedAt: 'desc' },
+          include: {
+            locations: {
+              orderBy: { order: 'asc' },
+              include: { location: true }
+            }
+          }
+        },
         _count: {
           select: { followers: true, following: true, savedPlaces: true, locations: true }
         }

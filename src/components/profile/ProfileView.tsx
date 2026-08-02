@@ -2,11 +2,12 @@ import { User, LocationData } from '@/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MapPin, Trophy, Navigation, Settings, Grid, Bookmark, Award, Calendar } from 'lucide-react';
+import { MapPin, Trophy, Navigation, Settings, Grid, Bookmark, Award, Calendar, Map } from 'lucide-react';
 import { GemCard } from '@/components/shared/GemCard';
 import { DiscoveriesList } from '@/components/profile/DiscoveriesList';
 import { FollowButton } from '@/components/profile/FollowButton';
 import { PostItem } from '@/components/community/PostItem';
+import { TripPlanner } from '@/components/trips/TripPlanner';
 import Link from 'next/link';
 import { useMemo } from 'react';
 
@@ -121,6 +122,15 @@ export function ProfileView({ user, locations, currentUserId, isFollowing = fals
             <Award className="w-4 h-4 mr-2" />
             Badges
           </TabsTrigger>
+          {currentUserId === user.id && (
+            <TabsTrigger 
+              value="trips"
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-6 py-3"
+            >
+              <Map className="w-4 h-4 mr-2" />
+              Trips
+            </TabsTrigger>
+          )}
         </TabsList>
 
         <TabsContent value="discoveries" className="mt-6">
@@ -180,6 +190,12 @@ export function ProfileView({ user, locations, currentUserId, isFollowing = fals
             </p>
           </div>
         </TabsContent>
+
+        {currentUserId === user.id && (
+          <TabsContent value="trips" className="mt-6">
+            <TripPlanner trips={(user as any).trips || []} />
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );

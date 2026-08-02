@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Heart, MessageCircle, MoreHorizontal, Pencil, Trash2, X, Check, Loader2, ImagePlus, MapPin, Bookmark, ListTodo } from 'lucide-react';
+import { Heart, MessageCircle, MoreHorizontal, Pencil, Trash2, X, Check, Loader2, ImagePlus, MapPin, Bookmark, ListTodo, Flag } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { fetchPostCommentsAction, toggleCommunityLikeAction, deleteCommunityPostAction, updateCommunityPostAction, toggleSavePostAction, voteOnPollAction } from '@/actions/community';
 import { getPresignedUrlAction } from '@/actions/storage';
@@ -21,6 +21,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import Link from 'next/link';
 import { ImageViewer } from './ImageViewer';
+import { ReportDialog } from '@/components/shared/ReportDialog';
 
 export function PostItem({ post, currentUserId }: { post: any, currentUserId?: string }) {
   const [showComments, setShowComments] = useState(false);
@@ -61,6 +62,9 @@ export function PostItem({ post, currentUserId }: { post: any, currentUserId?: s
 
   // Image viewer state
   const [viewerIndex, setViewerIndex] = useState<number | null>(null);
+
+  // Report state
+  const [isReportOpen, setIsReportOpen] = useState(false);
 
   const isOwner = currentUserId === post.userId;
   const isEdited = new Date(post.updatedAt).getTime() - new Date(post.createdAt).getTime() > 1000;
@@ -264,18 +268,27 @@ export function PostItem({ post, currentUserId }: { post: any, currentUserId?: s
             </div>
           </div>
           
-          {isOwner && !isEditing && (
+          {(!isOwner || (isOwner && !isEditing)) && (
             <DropdownMenu>
               <DropdownMenuTrigger className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground -mt-1 -mr-2 focus:outline-none">
                 <MoreHorizontal className="h-4 w-4" />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setIsEditing(true)} className="cursor-pointer">
-                  <Pencil className="h-4 w-4 mr-2" /> Edit Post
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleDelete} className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10">
-                  <Trash2 className="h-4 w-4 mr-2" /> Delete Post
-                </DropdownMenuItem>
+                {isOwner && (
+                  <>
+                    <DropdownMenuItem onClick={() => setIsEditing(true)} className="cursor-pointer">
+                      <Pencil className="h-4 w-4 mr-2" /> Edit Post
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleDelete} className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10">
+                      <Trash2 className="h-4 w-4 mr-2" /> Delete Post
+                    </DropdownMenuItem>
+                  </>
+                )}
+                {!isOwner && (
+                  <DropdownMenuItem onClick={() => setIsReportOpen(true)} className="text-red-600 focus:bg-red-50 focus:text-red-700 cursor-pointer">
+                    <Flag className="w-4 h-4 mr-2" /> Report Post
+                  </DropdownMenuItem>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           )}
@@ -470,6 +483,15 @@ export function PostItem({ post, currentUserId }: { post: any, currentUserId?: s
           </CardFooter>
         )}
       </Card>
+
+      {isReportOpen && (
+        <ReportDialog
+          isOpen={isReportOpen}
+          onClose={() => setIsReportOpen(false)}
+          targetId={post.id}
+          type="POST"
+        />
+      )}
     </>
   );
 }

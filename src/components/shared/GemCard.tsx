@@ -11,7 +11,9 @@ import { toggleSaveAction } from '@/actions/interactions';
 import { toast } from 'sonner';
 import { Edit } from 'lucide-react';
 import { AddToTripDropdown } from '@/components/trips/AddToTripDropdown';
-
+import { MoreHorizontal, Flag } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { ReportDialog } from '@/components/shared/ReportDialog';
 interface GemCardProps {
   location: LocationData;
   isEditable?: boolean;
@@ -21,6 +23,7 @@ interface GemCardProps {
 
 export function GemCard({ location, isEditable, onEditClick, initialIsSaved = false }: GemCardProps) {
   const [isSaved, setIsSaved] = useState(initialIsSaved);
+  const [isReportOpen, setIsReportOpen] = useState(false);
   
   useEffect(() => {
     setIsSaved(initialIsSaved);
@@ -70,6 +73,24 @@ export function GemCard({ location, isEditable, onEditClick, initialIsSaved = fa
               </Badge>
             )}
           </div>
+          
+          <div className="absolute top-3 right-3 flex gap-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger onClick={(e) => e.preventDefault()} className="w-8 h-8 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center text-on-surface hover:text-primary transition-colors focus:outline-none">
+                <MoreHorizontal className="w-5 h-5" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" onClick={(e) => e.preventDefault()}>
+                <DropdownMenuItem onClick={(e) => {
+                  e.preventDefault();
+                  setIsReportOpen(true);
+                }} className="text-red-600 focus:bg-red-50 focus:text-red-700 cursor-pointer">
+                  <Flag className="w-4 h-4 mr-2" />
+                  Report Location
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
           <div className="absolute bottom-3 left-3 flex gap-2">
             <button 
               onClick={handleSave}
@@ -118,6 +139,15 @@ export function GemCard({ location, isEditable, onEditClick, initialIsSaved = fa
           </div>
         </CardContent>
       </Card>
+      
+      {isReportOpen && (
+        <ReportDialog
+          isOpen={isReportOpen}
+          onClose={() => setIsReportOpen(false)}
+          targetId={location.id}
+          type="LOCATION"
+        />
+      )}
     </Link>
   );
 }

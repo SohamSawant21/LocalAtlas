@@ -1,15 +1,19 @@
+"use client";
+
 import { User, LocationData } from '@/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MapPin, Trophy, Navigation, Settings, Grid, Bookmark, Calendar, Map } from 'lucide-react';
+import { MapPin, Trophy, Navigation, Settings, Grid, Bookmark, Calendar, Map, MoreHorizontal, Flag } from 'lucide-react';
 import { GemCard } from '@/components/shared/GemCard';
 import { DiscoveriesList } from '@/components/profile/DiscoveriesList';
 import { FollowButton } from '@/components/profile/FollowButton';
 import { PostItem } from '@/components/community/PostItem';
 import { TripPlanner } from '@/components/trips/TripPlanner';
 import Link from 'next/link';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { ReportDialog } from '@/components/shared/ReportDialog';
 
 interface ProfileViewProps {
   user: User;
@@ -22,6 +26,7 @@ interface ProfileViewProps {
 export function ProfileView({ user, locations, currentUserId, isFollowing = false, savedLocationIds = [] }: ProfileViewProps) {
   const joinDate = user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'Unknown';
   const savedIdsSet = useMemo(() => new Set(savedLocationIds), [savedLocationIds]);
+  const [isReportOpen, setIsReportOpen] = useState(false);
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-12 max-w-5xl">
@@ -54,7 +59,20 @@ export function ProfileView({ user, locations, currentUserId, isFollowing = fals
             
             <div className="flex justify-center md:justify-end gap-3">
               {currentUserId !== user.id && (
-                <FollowButton targetUserId={user.id} initialIsFollowing={isFollowing} />
+                <>
+                  <FollowButton targetUserId={user.id} initialIsFollowing={isFollowing} />
+                  <DropdownMenu>
+                    <DropdownMenuTrigger className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 w-10 border-border/50 text-muted-foreground focus:outline-none">
+                      <MoreHorizontal className="w-4 h-4" />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => setIsReportOpen(true)} className="text-red-600 focus:bg-red-50 focus:text-red-700 cursor-pointer">
+                        <Flag className="w-4 h-4 mr-2" />
+                        Report User
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </>
               )}
               {currentUserId === user.id && (
                 <Link href="/settings">
@@ -180,6 +198,15 @@ export function ProfileView({ user, locations, currentUserId, isFollowing = fals
           </TabsContent>
         )}
       </Tabs>
+
+      {isReportOpen && (
+        <ReportDialog
+          isOpen={isReportOpen}
+          onClose={() => setIsReportOpen(false)}
+          targetId={user.id}
+          type="USER"
+        />
+      )}
     </div>
   );
 }

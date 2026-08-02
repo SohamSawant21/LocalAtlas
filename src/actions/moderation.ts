@@ -42,9 +42,28 @@ export async function createReportAction(data: z.infer<typeof reportSchema>) {
     if (!session?.user?.id) return { success: false, error: 'Unauthorized' };
 
     const parsed = reportSchema.parse(data);
+    
+    // Sanitize reason (strip basic HTML tags)
+    const sanitizedReason = parsed.reason.replace(/<[^>]*>?/gm, '');
+
+    // Prevent duplicate reports from the same user for the same target
+    const existingReport = await prisma.report.findFirst({
+      where: {
+        reporterId: session.user.id,
+        targetId: parsed.targetId,
+        type: parsed.type,
+      }
+    });
+
+    if (existingReport) {
+      return { success: false, error: 'You have already reported this content.' };
+    }
+
     const result = await prisma.report.create({
       data: {
-        ...parsed,
+        type: parsed.type,
+        targetId: parsed.targetId,
+        reason: sanitizedReason,
         reporterId: session.user.id
       }
     });

@@ -1,8 +1,10 @@
 'use client';
 
 import React, { useState, useTransition } from 'react';
-import { Star, User as UserIcon } from 'lucide-react';
+import { Star, User as UserIcon, MoreHorizontal, Flag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { ReportDialog } from '@/components/shared/ReportDialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ReviewData } from '@/types';
@@ -23,6 +25,7 @@ export function ReviewSection({ locationId, reviews, isAuthenticated }: ReviewSe
   const [rating, setRating] = useState(0);
   const [content, setContent] = useState('');
   const [isPending, startTransition] = useTransition();
+  const [reportingReviewId, setReportingReviewId] = useState<string | null>(null);
 
   const handleOpenChange = (open: boolean) => {
     if (open && !isAuthenticated) {
@@ -155,15 +158,39 @@ export function ReviewSection({ locationId, reviews, isAuthenticated }: ReviewSe
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center space-x-1">
-                  <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                  <span className="text-sm font-medium">{review.rating}</span>
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center space-x-1">
+                    <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                    <span className="text-sm font-medium">{review.rating}</span>
+                  </div>
+                  {isAuthenticated && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 hover:bg-accent hover:text-accent-foreground h-8 w-8 text-muted-foreground focus:outline-none">
+                        <MoreHorizontal className="w-4 h-4" />
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => setReportingReviewId(review.id)} className="text-red-600 focus:bg-red-50 focus:text-red-700 cursor-pointer">
+                          <Flag className="w-4 h-4 mr-2" />
+                          Report Review
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
                 </div>
               </div>
               <p className="text-sm text-foreground/90 mt-3 whitespace-pre-wrap">{review.content}</p>
             </div>
           ))}
         </div>
+      )}
+
+      {reportingReviewId && (
+        <ReportDialog
+          isOpen={!!reportingReviewId}
+          onClose={() => setReportingReviewId(null)}
+          targetId={reportingReviewId}
+          type="REVIEW"
+        />
       )}
     </div>
   );

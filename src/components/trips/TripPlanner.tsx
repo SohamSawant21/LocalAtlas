@@ -4,26 +4,90 @@ import React from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Map, Calendar, Clock, ChevronRight } from 'lucide-react';
+import { Map, Calendar, Clock, ChevronRight, Loader2 } from 'lucide-react';
 import { TripLocationData } from '@/types';
+import Link from 'next/link';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { useState, useTransition } from 'react';
+import { createTripAction } from '@/actions/trips';
+import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
 
 export function TripPlanner({ trips }: { trips: any[] }) {
-  // Trips now include locations directly in our DB schema via trip.locations (which includes location)
+  const router = useRouter();
+  const [isOpen, setIsOpen] = useState(false);
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [isPending, startTransition] = useTransition();
+
+  const handleCreate = () => {
+    if (!name.trim()) {
+      toast.error('Trip name is required');
+      return;
+    }
+    startTransition(async () => {
+      const result = await createTripAction({ name, description });
+      if (result.success) {
+        toast.success('Trip created!');
+        setIsOpen(false);
+        setName('');
+        setDescription('');
+        router.refresh();
+      } else {
+        toast.error(result.error?.message || 'Failed to create trip');
+      }
+    });
+  };
 
   return (
     <div className="space-y-8">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Create New Trip Card */}
-        <Card className="flex flex-col items-center justify-center h-full min-h-[300px] border-dashed border-2 border-muted-foreground/25 bg-muted/10 hover:bg-muted/20 transition-colors cursor-pointer group">
-          <div className="bg-primary/10 p-4 rounded-full mb-4 group-hover:scale-110 transition-transform">
-            <Map className="h-8 w-8 text-primary" />
-          </div>
-          <CardTitle className="mb-2 text-xl">Plan a New Trip</CardTitle>
-          <CardDescription className="text-center px-6">
-            Create a custom itinerary with your favorite hidden gems
-          </CardDescription>
-          <Button className="mt-6" variant="outline">Create Trip</Button>
-        </Card>
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+          <Card 
+            className="flex flex-col items-center justify-center h-full min-h-[300px] border-dashed border-2 border-muted-foreground/25 bg-muted/10 hover:bg-muted/20 transition-colors cursor-pointer group"
+            onClick={() => setIsOpen(true)}
+          >
+              <div className="bg-primary/10 p-4 rounded-full mb-4 group-hover:scale-110 transition-transform">
+                <Map className="h-8 w-8 text-primary" />
+              </div>
+              <CardTitle className="mb-2 text-xl">Plan a New Trip</CardTitle>
+              <CardDescription className="text-center px-6">
+                Create a custom itinerary with your favorite hidden gems
+              </CardDescription>
+              <Button className="mt-6" variant="outline" asChild>
+                <span>Create Trip</span>
+              </Button>
+          </Card>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Create New Trip</DialogTitle>
+              <DialogDescription>
+                Start planning your next adventure. You can add places to this trip as you explore.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Trip Name</Label>
+                <Input id="name" placeholder="e.g., Weekend Getaway to Konkan" value={name} onChange={(e) => setName(e.target.value)} disabled={isPending} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="description">Description (Optional)</Label>
+                <Textarea id="description" placeholder="What is this trip about?" value={description} onChange={(e) => setDescription(e.target.value)} disabled={isPending} />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsOpen(false)} disabled={isPending}>Cancel</Button>
+              <Button onClick={handleCreate} disabled={isPending || !name.trim()}>
+                {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Create Trip
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {/* Existing Trips */}
         {trips.map((trip) => (
@@ -69,8 +133,10 @@ export function TripPlanner({ trips }: { trips: any[] }) {
                 <Calendar className="w-4 h-4" />
                 Updated {new Date(trip.updatedAt).toLocaleDateString()}
               </div>
-              <Button size="sm" className="gap-2">
-                Open Itinerary <ChevronRight className="w-4 h-4" />
+              <Button size="sm" className="gap-2" asChild>
+                <Link href={`/trips/${trip.id}`}>
+                  Open Itinerary <ChevronRight className="w-4 h-4" />
+                </Link>
               </Button>
             </CardFooter>
           </Card>

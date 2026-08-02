@@ -2,7 +2,7 @@
 
 import { auth } from '@/auth';
 import { z } from 'zod';
-import { createTrip, updateTrip, deleteTrip, addLocationToTrip, removeLocationFromTrip } from '@/services/trip';
+import { createTrip, updateTrip, deleteTrip, addLocationToTrip, removeLocationFromTrip, getUserTrips } from '@/services/trip';
 import { ActionResponse } from '@/types';
 import { revalidatePath } from 'next/cache';
 
@@ -128,6 +128,19 @@ export async function removeLocationFromTripAction(data: z.infer<typeof removeLo
     revalidatePath('/trips');
     revalidatePath(`/trips/[id]`, 'page');
     return { success: true, data: result };
+  } catch (error: any) {
+    return { success: false, error: { code: 'INTERNAL_ERROR', message: error.message } };
+  }
+}
+
+export async function getUserTripsAction(): Promise<ActionResponse<any>> {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false, error: { code: 'UNAUTHORIZED', message: 'You must be logged in.' } };
+    }
+    const trips = await getUserTrips(session.user.id);
+    return { success: true, data: trips };
   } catch (error: any) {
     return { success: false, error: { code: 'INTERNAL_ERROR', message: error.message } };
   }

@@ -10,6 +10,7 @@ import { useOptimistic, useTransition, useState, useEffect } from 'react';
 import { toggleSaveAction } from '@/actions/interactions';
 import { toast } from 'sonner';
 import { Edit } from 'lucide-react';
+import { AddToTripDropdown } from '@/components/trips/AddToTripDropdown';
 
 interface GemCardProps {
   location: LocationData;
@@ -69,13 +70,14 @@ export function GemCard({ location, isEditable, onEditClick, initialIsSaved = fa
               </Badge>
             )}
           </div>
-          <div className="absolute bottom-3 left-3">
+          <div className="absolute bottom-3 left-3 flex gap-2">
             <button 
               onClick={handleSave}
               className={`w-8 h-8 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center transition-colors ${optimisticSaved ? 'text-primary' : 'text-on-surface hover:text-primary hover:bg-white'}`}
             >
               <Bookmark className={`w-5 h-5 ${optimisticSaved ? 'fill-current' : ''}`} />
             </button>
+            <AddToTripDropdown locationId={location.id} />
           </div>
           {isEditable && onEditClick && (
             <div className="absolute bottom-3 right-3">

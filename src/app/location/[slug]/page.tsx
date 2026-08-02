@@ -6,6 +6,7 @@ import { SaveButton } from '@/components/location/SaveButton';
 import { ShareButton } from '@/components/location/ShareButton';
 import { LocationGallery } from '@/components/location/LocationGallery';
 import { LocalTipsSection } from '@/components/location/LocalTipsSection';
+import { AddToTripButton } from '@/components/location/AddToTripButton';
 import prisma from '@/lib/prisma';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -185,6 +186,7 @@ export default async function LocationPage({ params }: LocationPageProps) {
                 />
                 <ShareButton location={location} />
               </div>
+              <AddToTripButton locationId={location.id} isAuthenticated={!!session?.user} />
             </div>
 
             <div className="mt-8 pt-8 border-t space-y-5">

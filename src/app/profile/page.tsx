@@ -1,7 +1,7 @@
 import { getUserProfile } from '@/services/user';
 import { ProfileView } from '@/components/profile/ProfileView';
 import { auth } from '@/auth';
-import { redirect } from 'next/navigation';
+import { redirect, notFound } from 'next/navigation';
 import { getSavedLocationIds } from '@/services/interaction';
 
 export default async function CurrentUserProfilePage() {
@@ -13,7 +13,9 @@ export default async function CurrentUserProfilePage() {
   const currentUserId = session.user.id;
   const user = await getUserProfile(currentUserId);
   
-  if (!user) return null;
+  if (!user) {
+    notFound();
+  }
   
   const savedLocationIds = await getSavedLocationIds(currentUserId);
   

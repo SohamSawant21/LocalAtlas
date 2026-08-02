@@ -25,7 +25,7 @@ export const getTopGuides = unstable_cache(async (limit = 4) => {
   }
 }, ['top-guides'], { revalidate: 3600, tags: ['users'] });
 
-export const getUserProfile = unstable_cache(async (id: string) => {
+export const getUserProfile = async (id: string) => {
   try {
     const user = await prisma.user.findUnique({
       where: { id },
@@ -68,7 +68,7 @@ export const getUserProfile = unstable_cache(async (id: string) => {
     console.error('Failed to fetch user profile:', error);
     return null;
   }
-}, ['user-profile'], { revalidate: 3600, tags: ['user'] });
+};
 
 export const getIsFollowing = async (followerId: string, followingId: string) => {
   if (!followerId || !followingId) return false;

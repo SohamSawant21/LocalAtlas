@@ -7,6 +7,8 @@ import { ShareButton } from '@/components/location/ShareButton';
 import { LocationGallery } from '@/components/location/LocationGallery';
 import { LocalTipsSection } from '@/components/location/LocalTipsSection';
 import { AddToTripButton } from '@/components/location/AddToTripButton';
+import { VerifiedBadge } from '@/components/location/VerifiedBadge';
+import { VerificationButton } from '@/components/location/VerificationButton';
 import prisma from '@/lib/prisma';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -23,8 +25,14 @@ interface LocationPageProps {
 export default async function LocationPage({ params }: LocationPageProps) {
   const resolvedParams = await params;
   const { slug } = resolvedParams;
-  const location = await getLocationBySlug(slug);
   const session = await auth();
+  const location = await getLocationBySlug(slug, session?.user?.id);
+
+  let userReputation = 0;
+  if (session?.user?.id) {
+    const user = await prisma.user.findUnique({ where: { id: session.user.id }, select: { reputation: true } });
+    userReputation = user?.reputation || 0;
+  }
 
   if (!location) {
     notFound();
@@ -54,8 +62,9 @@ export default async function LocationPage({ params }: LocationPageProps) {
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
             <div className="absolute bottom-6 left-6 right-6">
               <Badge className="mb-4 bg-primary/90 hover:bg-primary text-white border-none backdrop-blur-sm">{location.category}</Badge>
-              <h1 className="text-3xl md:text-5xl font-bold text-white mb-2 tracking-tight">
+              <h1 className="text-3xl md:text-5xl font-bold text-white mb-2 tracking-tight flex items-center gap-3">
                 {location.name}
+                {location.verified && <VerifiedBadge />}
               </h1>
               <div className="flex items-center text-white/90 space-x-4">
                 <div className="flex items-center">
@@ -187,6 +196,18 @@ export default async function LocationPage({ params }: LocationPageProps) {
                 <ShareButton location={location} />
               </div>
               <AddToTripButton locationId={location.id} isAuthenticated={!!session?.user} />
+              
+              <div className="pt-2">
+                <VerificationButton
+                  locationId={location.id}
+                  initialVerified={location.verified}
+                  initialCount={location.verificationCount}
+                  hasVerified={location.hasVerified || false}
+                  isAuthenticated={!!session?.user}
+                  userReputation={userReputation}
+                  isOwner={location.userId === session?.user?.id}
+                />
+              </div>
             </div>
 
             <div className="mt-8 pt-8 border-t space-y-5">

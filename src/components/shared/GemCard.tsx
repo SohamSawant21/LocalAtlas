@@ -14,6 +14,7 @@ import { AddToTripDropdown } from '@/components/trips/AddToTripDropdown';
 import { MoreHorizontal, Flag } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { ReportDialog } from '@/components/shared/ReportDialog';
+import { VerifiedBadge } from '@/components/location/VerifiedBadge';
 interface GemCardProps {
   location: LocationData;
   isEditable?: boolean;
@@ -71,6 +72,9 @@ export function GemCard({ location, isEditable, onEditClick, initialIsSaved = fa
                 <TrendingUp className="w-3 h-3" />
                 Hidden Gem
               </Badge>
+            )}
+            {location.verified && (
+              <VerifiedBadge withTooltip={false} className="bg-emerald-500/90 text-white border-none backdrop-blur-sm shadow-none" />
             )}
           </div>
           

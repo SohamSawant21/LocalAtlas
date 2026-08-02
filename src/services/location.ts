@@ -35,24 +35,39 @@ export const getLocations = unstable_cache(async (params?: { category?: string; 
   }
 }, ['locations'], { revalidate: 3600, tags: ['locations'] });
 
-export const getLocationBySlug = unstable_cache(async (slug: string) => {
+export const getLocationBySlug = async (slug: string, userId?: string) => {
   try {
-    const location = await prisma.location.findUnique({
-      where: { slug },
-      include: {
-        contributor: true,
-        photos: true,
-        reviews: {
-          include: { user: true }
-        },
-      }
-    });
-    return location as unknown as LocationData | null;
+    const getCached = unstable_cache(async () => {
+      const location = await prisma.location.findUnique({
+        where: { slug },
+        include: {
+          contributor: true,
+          photos: true,
+          reviews: {
+            include: { user: true }
+          },
+        }
+      });
+      return location;
+    }, [`location-by-slug-${slug}`], { revalidate: 3600, tags: ['location'] });
+    
+    const location = await getCached();
+    if (!location) return null;
+
+    let hasVerified = false;
+    if (userId) {
+      const verification = await prisma.verification.findFirst({
+        where: { userId, locationId: location.id }
+      });
+      hasVerified = !!verification;
+    }
+
+    return { ...location, hasVerified } as unknown as LocationData;
   } catch (error) {
     console.error('Failed to fetch location:', error);
     return null;
   }
-}, ['location-by-slug'], { revalidate: 3600, tags: ['location'] });
+};
 
 export async function createLocation(data: Omit<LocationData, 'id' | 'createdAt' | 'updatedAt' | 'slug' | 'verified' | 'verificationCount' | 'status'> & { slug: string, status?: LocationStatus }) {
   return prisma.location.create({

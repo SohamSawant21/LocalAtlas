@@ -57,6 +57,7 @@ export interface LocationData {
   reviews?: ReviewData[];
   createdAt: Date;
   updatedAt: Date;
+  hasVerified?: boolean;
 }
 
 export interface NotificationData {

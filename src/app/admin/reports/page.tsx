@@ -1,7 +1,8 @@
 import React from 'react';
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
-import prisma from '@/lib/prisma';
+import { getPendingReportsWithContext } from '@/services/moderation';
+import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -13,11 +14,7 @@ export default async function ReportsDashboard() {
     redirect('/');
   }
 
-  const reports = await prisma.report.findMany({
-    where: { status: 'PENDING' },
-    include: { reporter: true },
-    orderBy: { createdAt: 'asc' }
-  });
+  const reports = await getPendingReportsWithContext();
 
   return (
     <div className="p-6 max-w-5xl">
@@ -35,14 +32,32 @@ export default async function ReportsDashboard() {
               <div className="space-y-4">
                 {reports.map((report) => (
                   <div key={report.id} className="p-4 border rounded-lg flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div>
-                      <h3 className="font-semibold text-lg flex gap-2 items-center">
-                        <Badge variant="destructive">{report.type}</Badge> 
-                        <span className="text-sm font-normal text-muted-foreground">Target ID: {report.targetId}</span>
-                      </h3>
-                      <p className="text-sm font-medium mt-2">Reason: {report.reason}</p>
-                      <div className="text-xs text-muted-foreground mt-2">
-                        Reported by {report.reporter?.name} on {new Date(report.createdAt).toLocaleDateString()}
+                    <div className="flex-1">
+                      <div className="flex justify-between">
+                        <h3 className="font-semibold text-lg flex gap-2 items-center">
+                          <Badge variant="destructive">{report.type}</Badge> 
+                          <span className="text-sm font-normal text-muted-foreground">Target ID: {report.targetId}</span>
+                        </h3>
+                        {report.context.url && (
+                          <Link href={report.context.url} target="_blank" className="text-sm text-primary hover:underline">
+                            View Original Content ↗
+                          </Link>
+                        )}
+                      </div>
+                      
+                      <div className="mt-3 bg-muted/30 p-3 rounded-md border text-sm">
+                        <p className="font-medium text-xs text-muted-foreground mb-1">Reported Content Preview:</p>
+                        <p className="whitespace-pre-wrap">{report.context.snippet}</p>
+                        <p className="text-xs text-muted-foreground mt-2">— Posted by: {report.context.authorName}</p>
+                      </div>
+
+                      <div className="mt-4 p-3 bg-red-50/50 dark:bg-red-950/20 rounded-md border border-red-100 dark:border-red-900/30">
+                        <p className="text-sm font-medium text-red-800 dark:text-red-400">Reason: {report.reason}</p>
+                      </div>
+
+                      <div className="text-xs text-muted-foreground mt-3 flex justify-between">
+                        <span>Reported by <strong>{report.reporter?.name || 'Unknown'}</strong> ({report.reporter?.email})</span>
+                        <span>{new Date(report.createdAt).toLocaleDateString()} at {new Date(report.createdAt).toLocaleTimeString()}</span>
                       </div>
                     </div>
                     <div className="flex flex-col gap-2 min-w-[140px]">

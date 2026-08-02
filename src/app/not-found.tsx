@@ -22,7 +22,7 @@ export default function NotFound() {
       </h2>
       
       <p className="max-w-[400px] text-muted-foreground mb-8 text-lg">
-        We couldn&apos;t find the hidden gem you&apos;re looking for. It might be too secret, or it doesn&apos;t exist yet.
+        We couldn&apos;t find the content you&apos;re looking for. It may have been removed by the author or a moderator for violating community guidelines.
       </p>
       
       <div className="flex flex-col sm:flex-row gap-4">

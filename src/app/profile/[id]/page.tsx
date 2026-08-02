@@ -21,6 +21,18 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
     notFound();
   }
 
+  const isBanned = (user as any).isBanned;
+  const isSuspended = (user as any).suspendedUntil && new Date((user as any).suspendedUntil) > new Date();
+  
+  if (isBanned || isSuspended) {
+    return (
+      <div className="container mx-auto px-4 py-32 text-center max-w-lg">
+        <h1 className="text-3xl font-bold mb-4 text-foreground">Content Unavailable</h1>
+        <p className="text-muted-foreground">This user account has been suspended or removed by a moderator for violating community guidelines.</p>
+      </div>
+    );
+  }
+
   const isFollowing = currentUserId ? await getIsFollowing(currentUserId, id) : false;
   let savedLocationIds = new Set<string>();
   if (currentUserId) {

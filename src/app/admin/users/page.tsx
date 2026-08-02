@@ -4,8 +4,7 @@ import { redirect } from 'next/navigation';
 import prisma from '@/lib/prisma';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { manageUserAction, suspendUserAction, changeUserRoleAction } from '@/actions/moderation';
+import { UserActionButtons } from '@/components/admin/UserActionButtons';
 
 export default async function UsersDashboard() {
   const session = await auth();
@@ -49,36 +48,7 @@ export default async function UsersDashboard() {
                   </div>
                   
                   {u.role !== 'ADMIN' && (
-                    <div className="flex flex-wrap gap-2 items-center justify-end">
-                      <form action={async () => {
-                        'use server';
-                        await changeUserRoleAction(u.id, u.role === 'MODERATOR' ? 'USER' : 'MODERATOR');
-                      }}>
-                        <Button type="submit" variant="outline" size="sm">
-                          {u.role === 'MODERATOR' ? 'Demote to User' : 'Promote to Mod'}
-                        </Button>
-                      </form>
-
-                      {!u.isBanned ? (
-                        <form action={async () => { 'use server'; await manageUserAction(u.id, 'BAN'); }}>
-                          <Button type="submit" variant="destructive" size="sm">Ban User</Button>
-                        </form>
-                      ) : (
-                        <form action={async () => { 'use server'; await manageUserAction(u.id, 'UNBAN'); }}>
-                          <Button type="submit" variant="outline" size="sm">Unban</Button>
-                        </form>
-                      )}
-
-                      {!u.isShadowbanned ? (
-                        <form action={async () => { 'use server'; await manageUserAction(u.id, 'SHADOWBAN'); }}>
-                          <Button type="submit" variant="secondary" size="sm">Shadowban</Button>
-                        </form>
-                      ) : (
-                        <form action={async () => { 'use server'; await manageUserAction(u.id, 'UNSHADOWBAN'); }}>
-                          <Button type="submit" variant="outline" size="sm">Remove Shadowban</Button>
-                        </form>
-                      )}
-                    </div>
+                    <UserActionButtons user={u} />
                   )}
                 </div>
               ))}

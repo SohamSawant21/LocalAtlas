@@ -5,8 +5,7 @@ import { getPendingReportsWithContext } from '@/services/moderation';
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { resolveReportAction } from '@/actions/moderation';
+import { ReportActionButtons } from '@/components/admin/ReportActionButtons';
 
 export default async function ReportsDashboard() {
   const session = await auth();
@@ -60,20 +59,7 @@ export default async function ReportsDashboard() {
                         <span>{new Date(report.createdAt).toLocaleDateString()} at {new Date(report.createdAt).toLocaleTimeString()}</span>
                       </div>
                     </div>
-                    <div className="flex flex-col gap-2 min-w-[140px]">
-                      <form action={async () => {
-                        'use server';
-                        await resolveReportAction(report.id, 'DELETE_CONTENT', 'Content violated guidelines.');
-                      }}>
-                        <Button type="submit" variant="destructive" className="w-full">Delete Content</Button>
-                      </form>
-                      <form action={async () => {
-                        'use server';
-                        await resolveReportAction(report.id, 'DISMISS', 'Report found to be invalid.');
-                      }}>
-                        <Button type="submit" variant="outline" className="w-full">Dismiss Report</Button>
-                      </form>
-                    </div>
+                    <ReportActionButtons reportId={report.id} />
                   </div>
                 ))}
               </div>

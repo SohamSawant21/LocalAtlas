@@ -99,7 +99,7 @@ export async function resolveReportAction(reportId: string, action: 'DISMISS' | 
       });
     });
 
-    revalidatePath('/admin');
+    revalidatePath('/', 'layout');
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message };
@@ -123,14 +123,14 @@ export async function suspendUserAction(userId: string, durationHours: number, r
 
     await logModAction(mod.id, 'SUSPENDED_USER', userId, 'USER', `Duration: ${durationHours}h. Reason: ${reason}`);
 
-    revalidatePath('/admin/users');
+    revalidatePath('/', 'layout');
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message };
   }
 }
 
-export async function manageUserAction(userId: string, action: 'BAN' | 'UNBAN' | 'SHADOWBAN' | 'UNSHADOWBAN') {
+export async function manageUserAction(userId: string, action: 'BAN' | 'UNBAN' | 'SHADOWBAN' | 'UNSHADOWBAN' | 'UNSUSPEND') {
   try {
     const admin = await checkAdmin();
     
@@ -143,6 +143,7 @@ export async function manageUserAction(userId: string, action: 'BAN' | 'UNBAN' |
     if (action === 'UNBAN') updateData = { isBanned: false };
     if (action === 'SHADOWBAN') updateData = { isShadowbanned: true };
     if (action === 'UNSHADOWBAN') updateData = { isShadowbanned: false };
+    if (action === 'UNSUSPEND') updateData = { suspendedUntil: null };
 
     await prisma.user.update({
       where: { id: userId },
@@ -151,7 +152,7 @@ export async function manageUserAction(userId: string, action: 'BAN' | 'UNBAN' |
 
     await logModAction(admin.id, action, userId, 'USER');
 
-    revalidatePath('/admin/users');
+    revalidatePath('/', 'layout');
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message };
@@ -173,7 +174,7 @@ export async function changeUserRoleAction(userId: string, newRole: 'USER' | 'MO
 
     await logModAction(admin.id, `CHANGED_ROLE_TO_${newRole}`, userId, 'USER');
 
-    revalidatePath('/admin/users');
+    revalidatePath('/', 'layout');
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message };

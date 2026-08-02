@@ -2,7 +2,7 @@
 
 import { useOptimistic, useTransition, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
-import { Bell, Heart, ShieldCheck, CloudLightning, Info, CheckCircle2 } from "lucide-react";
+import { Bell, Heart, CloudLightning, Info, CheckCircle2 } from "lucide-react";
 import { NotificationType } from "@/types";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { Button } from "@/components/ui/button";
@@ -23,8 +23,7 @@ const getNotificationIcon = (type: NotificationType) => {
       return <CloudLightning className="h-5 w-5 text-amber-500" />;
     case "SYSTEM":
       return <Info className="h-5 w-5 text-blue-500" />;
-    case "ACHIEVEMENT":
-      return <ShieldCheck className="h-5 w-5 text-purple-500" />;
+
     default:
       return <Bell className="h-5 w-5 text-muted-foreground" />;
   }

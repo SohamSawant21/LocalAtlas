@@ -5,7 +5,7 @@ export type Difficulty = 'EASY' | 'MODERATE' | 'HARD' | 'EXPERT';
 export type RoadCondition = 'EXCELLENT' | 'GOOD' | 'FAIR' | 'POOR' | 'OFFROAD';
 export type Season = 'MONSOON' | 'WINTER' | 'SUMMER' | 'ALL_YEAR';
 export type LocationStatus = 'DRAFT' | 'PENDING' | 'APPROVED' | 'REJECTED';
-export type NotificationType = 'LIKE' | 'COMMENT' | 'FOLLOW' | 'VERIFICATION' | 'APPROVAL' | 'WEATHER_ALERT' | 'ROAD_CLOSURE' | 'ACHIEVEMENT' | 'SYSTEM';
+export type NotificationType = 'LIKE' | 'COMMENT' | 'FOLLOW' | 'VERIFICATION' | 'APPROVAL' | 'WEATHER_ALERT' | 'ROAD_CLOSURE' | 'SYSTEM';
 export type UserRole = 'USER' | 'ADMIN' | 'MODERATOR';
 
 export interface User {
@@ -123,22 +123,6 @@ export interface CommentData {
   createdAt: Date;
 }
 
-export interface AchievementData {
-  id: string;
-  name: string;
-  description: string;
-  icon: string;
-  criteria: string;
-  unlockedAt: Date;
-}
-
-export interface BadgeData {
-  id: string;
-  name: string;
-  description: string;
-  icon: string;
-  category: string;
-}
 
 export interface ApiResponse<T> {
   data: T;

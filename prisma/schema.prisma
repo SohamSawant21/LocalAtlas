@@ -76,7 +76,6 @@ enum NotificationType {
   APPROVAL
   WEATHER_ALERT
   ROAD_CLOSURE
-  ACHIEVEMENT
   SYSTEM
 }
 
@@ -134,8 +133,6 @@ model User {
   communityPosts CommunityPost[]
   notifications  Notification[] @relation("notificationRecipient")
   actedNotifications Notification[] @relation("notificationActor")
-  achievements   Achievement[]
-  userBadges     UserBadge[]
   verifications  Verification[]
   pollVotes      PollVote[]
   followers      Follow[]  @relation("following")
@@ -355,44 +352,6 @@ model Notification {
   @@map("notifications")
 }
 
-model Achievement {
-  id          String   @id @default(cuid())
-  name        String
-  description String
-  icon        String
-  criteria    String
-  userId      String
-  unlockedAt  DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("achievements")
-}
-
-model Badge {
-  id          String @id @default(cuid())
-  name        String @unique
-  description String
-  icon        String
-  category    String
-
-  userBadges UserBadge[]
-
-  @@map("badges")
-}
-
-model UserBadge {
-  id       String   @id @default(cuid())
-  userId   String
-  badgeId  String
-  earnedAt DateTime @default(now())
-
-  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  badge Badge @relation(fields: [badgeId], references: [id])
-
-  @@unique([userId, badgeId])
-  @@map("user_badges")
-}
 
 model Comment {
   id         String   @id @default(cuid())

@@ -11,6 +11,7 @@ export async function exportComponentAsPNG(element: HTMLElement, options: Export
       quality: 1.0,
       pixelRatio: options.pixelRatio || 2,
       backgroundColor: 'transparent',
+      // @ts-ignore - html-to-image types may not have useCORS but it is valid in some versions/forks
       useCORS: true,
     });
 

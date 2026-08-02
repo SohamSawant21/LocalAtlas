@@ -40,6 +40,7 @@ export function LocalTipsSection({
         content: content.trim(),
         category: 'TRAVEL_TIP',
         locationId: locationId,
+        imageUrls: [],
       });
 
       if (res.success) {

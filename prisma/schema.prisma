@@ -93,11 +93,7 @@ enum PostCategory {
   MEETUP
 }
 
-enum VerificationStatus {
-  PENDING
-  APPROVED
-  REJECTED
-}
+
 
 model User {
   id             String    @id @default(cuid())
@@ -517,7 +513,6 @@ model Verification {
   id         String             @id @default(cuid())
   locationId String
   userId     String
-  status     VerificationStatus @default(PENDING)
   notes      String?
   createdAt  DateTime           @default(now())
 

@@ -31,9 +31,7 @@ export async function recalculateUserReputation(
           },
         },
       },
-      verifications: {
-        where: { status: 'APPROVED' },
-      },
+      verifications: true,
     },
   });
 

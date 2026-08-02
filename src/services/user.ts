@@ -57,7 +57,6 @@ export const getUserProfile = async (id: string) => {
             }
           }
         },
-        userBadges: { include: { badge: true } },
         trips: {
           orderBy: { updatedAt: 'desc' },
           include: {

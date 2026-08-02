@@ -2,7 +2,7 @@ import { User, LocationData } from '@/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MapPin, Trophy, Navigation, Settings, Grid, Bookmark, Award, Calendar, Map } from 'lucide-react';
+import { MapPin, Trophy, Navigation, Settings, Grid, Bookmark, Calendar, Map } from 'lucide-react';
 import { GemCard } from '@/components/shared/GemCard';
 import { DiscoveriesList } from '@/components/profile/DiscoveriesList';
 import { FollowButton } from '@/components/profile/FollowButton';
@@ -115,13 +115,6 @@ export function ProfileView({ user, locations, currentUserId, isFollowing = fals
             <Bookmark className="w-4 h-4 mr-2" />
             Saved
           </TabsTrigger>
-          <TabsTrigger 
-            value="badges"
-            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-6 py-3"
-          >
-            <Award className="w-4 h-4 mr-2" />
-            Badges
-          </TabsTrigger>
           {currentUserId === user.id && (
             <TabsTrigger 
               value="trips"
@@ -179,16 +172,6 @@ export function ProfileView({ user, locations, currentUserId, isFollowing = fals
               </div>
             )}
           </section>
-        </TabsContent>
-
-        <TabsContent value="badges" className="mt-6">
-          <div className="text-center py-16 bg-muted/20 rounded-2xl border border-dashed">
-            <Award className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-            <h3 className="text-lg font-medium">No badges earned</h3>
-            <p className="text-muted-foreground text-sm mt-1">
-              Contribute to the community to earn unique badges.
-            </p>
-          </div>
         </TabsContent>
 
         {currentUserId === user.id && (

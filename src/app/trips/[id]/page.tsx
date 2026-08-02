@@ -4,7 +4,7 @@ import prisma from '@/lib/prisma';
 import { Map, Calendar, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { GemCard } from '@/components/shared/GemCard';
+import { TripItineraryList } from '@/components/trips/TripItineraryList';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -87,21 +87,7 @@ export default async function TripPage({ params }: TripPageProps) {
             </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {trip.locations.map((tripLoc, index) => (
-              <div key={tripLoc.id} className="relative">
-                <div className="absolute -left-3 -top-3 w-8 h-8 rounded-full bg-primary text-primary-foreground font-bold flex items-center justify-center z-10 shadow-sm border-2 border-background">
-                  {index + 1}
-                </div>
-                <GemCard location={tripLoc.location as any} />
-                {tripLoc.notes && (
-                  <div className="mt-3 p-3 bg-muted/50 rounded-lg border text-sm text-muted-foreground">
-                    <span className="font-semibold text-foreground">Note:</span> {tripLoc.notes}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
+          <TripItineraryList tripId={trip.id} initialLocations={trip.locations} />
         )}
       </div>
     </div>

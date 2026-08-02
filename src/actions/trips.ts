@@ -2,7 +2,7 @@
 
 import { auth } from '@/auth';
 import { z } from 'zod';
-import { createTrip, updateTrip, deleteTrip, addLocationToTrip, removeLocationFromTrip, getUserTrips } from '@/services/trip';
+import { createTrip, updateTrip, deleteTrip, addLocationToTrip, removeLocationFromTrip, getUserTrips, updateTripLocationsOrder, updateTripLocationNotes } from '@/services/trip';
 import { ActionResponse } from '@/types';
 import { revalidatePath } from 'next/cache';
 
@@ -141,6 +141,60 @@ export async function getUserTripsAction(): Promise<ActionResponse<any>> {
     }
     const trips = await getUserTrips(session.user.id);
     return { success: true, data: trips };
+  } catch (error: any) {
+    return { success: false, error: { code: 'INTERNAL_ERROR', message: error.message } };
+  }
+}
+
+const updateOrderSchema = z.object({
+  tripId: z.string().min(1),
+  updates: z.array(z.object({
+    id: z.string().min(1),
+    order: z.number(),
+  })),
+});
+
+export async function updateTripLocationsOrderAction(data: z.infer<typeof updateOrderSchema>): Promise<ActionResponse<any>> {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false, error: { code: 'UNAUTHORIZED', message: 'You must be logged in.' } };
+    }
+
+    const parsed = updateOrderSchema.safeParse(data);
+    if (!parsed.success) {
+      return { success: false, error: { code: 'BAD_REQUEST', message: 'Invalid order updates.' } };
+    }
+
+    const result = await updateTripLocationsOrder(session.user.id, parsed.data.tripId, parsed.data.updates);
+    revalidatePath(`/trips/[id]`, 'page');
+    return { success: true, data: result };
+  } catch (error: any) {
+    return { success: false, error: { code: 'INTERNAL_ERROR', message: error.message } };
+  }
+}
+
+const updateNotesSchema = z.object({
+  tripId: z.string().min(1),
+  tripLocationId: z.string().min(1),
+  notes: z.string().max(500),
+});
+
+export async function updateTripLocationNotesAction(data: z.infer<typeof updateNotesSchema>): Promise<ActionResponse<any>> {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false, error: { code: 'UNAUTHORIZED', message: 'You must be logged in.' } };
+    }
+
+    const parsed = updateNotesSchema.safeParse(data);
+    if (!parsed.success) {
+      return { success: false, error: { code: 'BAD_REQUEST', message: parsed.error.issues[0].message } };
+    }
+
+    const result = await updateTripLocationNotes(session.user.id, parsed.data.tripId, parsed.data.tripLocationId, parsed.data.notes);
+    revalidatePath(`/trips/[id]`, 'page');
+    return { success: true, data: result };
   } catch (error: any) {
     return { success: false, error: { code: 'INTERNAL_ERROR', message: error.message } };
   }

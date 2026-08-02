@@ -68,3 +68,34 @@ export async function getUserTrips(userId: string) {
     orderBy: { updatedAt: 'desc' },
   });
 }
+
+export async function updateTripLocationsOrder(userId: string, tripId: string, updates: { id: string; order: number }[]) {
+  const trip = await prisma.trip.findUnique({
+    where: { id: tripId, userId },
+  });
+
+  if (!trip) throw new Error("Trip not found or unauthorized");
+
+  // We perform multiple updates in a transaction for atomicity
+  const updatePromises = updates.map((update) => 
+    prisma.tripLocation.update({
+      where: { id: update.id, tripId },
+      data: { order: update.order },
+    })
+  );
+
+  return prisma.$transaction(updatePromises);
+}
+
+export async function updateTripLocationNotes(userId: string, tripId: string, tripLocationId: string, notes: string) {
+  const trip = await prisma.trip.findUnique({
+    where: { id: tripId, userId },
+  });
+
+  if (!trip) throw new Error("Trip not found or unauthorized");
+
+  return prisma.tripLocation.update({
+    where: { id: tripLocationId, tripId },
+    data: { notes },
+  });
+}

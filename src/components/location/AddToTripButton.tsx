@@ -1,16 +1,51 @@
 'use client';
 
-import React, { useState } from 'react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel } from '@/components/ui/dropdown-menu';
+import React, { useState, useTransition } from 'react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel, DropdownMenuGroup } from '@/components/ui/dropdown-menu';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Map, Plus, Loader2 } from 'lucide-react';
-import { getUserTripsAction, addLocationToTripAction } from '@/actions/trips';
+import { getUserTripsAction, addLocationToTripAction, createTripAction } from '@/actions/trips';
 import { toast } from 'sonner';
 
 export function AddToTripButton({ locationId, isAuthenticated }: { locationId: string, isAuthenticated: boolean }) {
   const [trips, setTrips] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [newTripName, setNewTripName] = useState('');
+  const [isCreating, startTransition] = useTransition();
+
+  const handleCreateAndAdd = () => {
+    if (!newTripName.trim()) {
+      toast.error('Trip name is required');
+      return;
+    }
+    
+    startTransition(async () => {
+      // 1. Create trip
+      const createRes = await createTripAction({ name: newTripName, description: '' });
+      if (!createRes.success || !createRes.data) {
+        toast.error(createRes.error?.message || 'Failed to create trip');
+        return;
+      }
+      
+      const newTripId = createRes.data.id;
+      
+      // 2. Add location to trip
+      const addRes = await addLocationToTripAction({ tripId: newTripId, locationId });
+      if (addRes.success) {
+        toast.success(`Created "${newTripName}" and added location!`);
+        setIsCreateModalOpen(false);
+        setNewTripName('');
+        fetchTrips(); // Refresh the list
+      } else {
+        toast.error(addRes.error?.message || 'Trip created, but failed to add location');
+      }
+    });
+  };
 
   const fetchTrips = async () => {
     if (!isAuthenticated) return;
@@ -44,8 +79,9 @@ export function AddToTripButton({ locationId, isAuthenticated }: { locationId: s
   };
 
   return (
-    <DropdownMenu onOpenChange={(open) => { if (open) fetchTrips(); }}>
-      <DropdownMenuTrigger 
+    <>
+      <DropdownMenu onOpenChange={(open) => { if (open) fetchTrips(); }}>
+        <DropdownMenuTrigger 
         className="w-full rounded-xl inline-flex items-center justify-center whitespace-nowrap text-sm font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 disabled:pointer-events-none disabled:opacity-50 focus:outline-none focus:ring-0" 
         disabled={!isAuthenticated || isAdding}
       >
@@ -53,31 +89,64 @@ export function AddToTripButton({ locationId, isAuthenticated }: { locationId: s
         Add to Trip
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-[200px]" onClick={(e) => e.stopPropagation()}>
-        <DropdownMenuLabel>Your Trips</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        {isLoading ? (
-          <div className="p-2 text-sm text-muted-foreground flex items-center justify-center">
-            <Loader2 className="w-4 h-4 animate-spin mr-2" /> Loading...
-          </div>
-        ) : trips.length === 0 ? (
-          <div className="p-2 text-sm text-muted-foreground text-center">
-            No trips found
-          </div>
-        ) : (
-          trips.map((trip) => (
-            <DropdownMenuItem key={trip.id} onSelect={() => handleAddToTrip(trip.id)} className="cursor-pointer">
-              {trip.name}
-            </DropdownMenuItem>
-          ))
-        )}
+        <DropdownMenuGroup>
+          <DropdownMenuLabel>Your Trips</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          {isLoading ? (
+            <div className="p-2 text-sm text-muted-foreground flex items-center justify-center">
+              <Loader2 className="w-4 h-4 animate-spin mr-2" /> Loading...
+            </div>
+          ) : trips.length === 0 ? (
+            <div className="p-2 text-sm text-muted-foreground text-center">
+              No trips found
+            </div>
+          ) : (
+            trips.map((trip) => (
+              <DropdownMenuItem key={trip.id} onClick={() => handleAddToTrip(trip.id)} className="cursor-pointer">
+                {trip.name}
+              </DropdownMenuItem>
+            ))
+          )}
+        </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem 
           className="cursor-pointer text-primary"
-          onSelect={() => window.location.href = '/trips'}
+          onClick={() => setIsCreateModalOpen(true)}
         >
           <Plus className="w-4 h-4 mr-2" /> Create New Trip
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
+
+    <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+      <DialogContent onClick={(e) => e.stopPropagation()}>
+        <DialogHeader>
+          <DialogTitle>Create New Trip</DialogTitle>
+          <DialogDescription>
+            Create a new trip and add this location to it instantly.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4 py-4">
+          <div className="space-y-2">
+            <Label htmlFor="name">Trip Name</Label>
+            <Input 
+              id="name" 
+              placeholder="e.g., Summer Getaway" 
+              value={newTripName} 
+              onChange={(e) => setNewTripName(e.target.value)} 
+              disabled={isCreating} 
+            />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setIsCreateModalOpen(false)} disabled={isCreating}>Cancel</Button>
+          <Button onClick={handleCreateAndAdd} disabled={isCreating || !newTripName.trim()}>
+            {isCreating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Create & Add
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }

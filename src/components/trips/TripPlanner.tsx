@@ -4,7 +4,7 @@ import React from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Map, Calendar, Clock, ChevronRight, Loader2 } from 'lucide-react';
+import { Map, Calendar, Clock, ChevronRight, Loader2, Trash2 } from 'lucide-react';
 import { TripLocationData } from '@/types';
 import Link from 'next/link';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useState, useTransition } from 'react';
-import { createTripAction } from '@/actions/trips';
+import { createTripAction, deleteTripAction } from '@/actions/trips';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 
@@ -21,7 +21,9 @@ export function TripPlanner({ trips }: { trips: any[] }) {
   const [isOpen, setIsOpen] = useState(false);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [tripToDelete, setTripToDelete] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [isDeleting, startDeleteTransition] = useTransition();
 
   const handleCreate = () => {
     if (!name.trim()) {
@@ -38,6 +40,20 @@ export function TripPlanner({ trips }: { trips: any[] }) {
         router.refresh();
       } else {
         toast.error(result.error?.message || 'Failed to create trip');
+      }
+    });
+  };
+
+  const handleDelete = () => {
+    if (!tripToDelete) return;
+    startDeleteTransition(async () => {
+      const result = await deleteTripAction(tripToDelete);
+      if (result.success) {
+        toast.success('Trip deleted successfully');
+        setTripToDelete(null);
+        router.refresh();
+      } else {
+        toast.error(result.error?.message || 'Failed to delete trip');
       }
     });
   };
@@ -89,6 +105,25 @@ export function TripPlanner({ trips }: { trips: any[] }) {
           </DialogContent>
         </Dialog>
 
+        {/* Delete Confirmation Dialog */}
+        <Dialog open={!!tripToDelete} onOpenChange={(open) => !open && setTripToDelete(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle className="text-destructive">Delete Trip</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to permanently delete this trip? This action cannot be undone and will remove all saved locations and notes from this itinerary.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setTripToDelete(null)} disabled={isDeleting}>Cancel</Button>
+              <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
+                {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Delete Permanently
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
         {/* Existing Trips */}
         {trips.map((trip) => (
           <Card key={trip.id} className="flex flex-col overflow-hidden hover:shadow-md transition-shadow">
@@ -98,9 +133,20 @@ export function TripPlanner({ trips }: { trips: any[] }) {
                   <CardTitle className="text-xl mb-1">{trip.name}</CardTitle>
                   <CardDescription className="line-clamp-2">{trip.description}</CardDescription>
                 </div>
-                <Badge variant="secondary" className="font-mono text-xs">
-                  {trip.locations.length} STOPS
-                </Badge>
+                <div className="flex flex-col items-end gap-2">
+                  <Badge variant="secondary" className="font-mono text-xs whitespace-nowrap">
+                    {trip.locations.length} STOPS
+                  </Badge>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                    onClick={() => setTripToDelete(trip.id)}
+                    title="Delete Trip"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </CardHeader>
             <CardContent className="p-0 flex-grow">

@@ -220,6 +220,7 @@ model Location {
   @@index([district])
   @@index([category])
   @@index([status])
+  @@index([status, district, category])
   @@index([verified])
   @@index([hiddenScore])
   @@index([userId])
@@ -237,6 +238,7 @@ model Photo {
   location Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
   user     User     @relation(fields: [userId], references: [id])
 
+  @@index([locationId])
   @@map("photos")
 }
 
@@ -316,6 +318,7 @@ model Story {
   likes    Like[]
 
   @@index([published, createdAt])
+  @@index([published, locationId])
   @@index([userId])
   @@map("stories")
 }
@@ -370,6 +373,9 @@ model Comment {
   replies  Comment[] @relation("CommentReplies")
   likes    Like[]
 
+  @@index([postId])
+  @@index([locationId])
+  @@index([userId])
   @@map("comments")
 }
 
@@ -388,6 +394,15 @@ model Like {
   post     CommunityPost? @relation(fields: [postId], references: [id], onDelete: Cascade)
   comment  Comment?  @relation(fields: [commentId], references: [id], onDelete: Cascade)
 
+  @@unique([userId, postId])
+  @@unique([userId, locationId])
+  @@unique([userId, commentId])
+  @@unique([userId, storyId])
+
+  @@index([postId])
+  @@index([locationId])
+  @@index([storyId])
+  @@index([commentId])
   @@map("likes")
 }
 
@@ -413,6 +428,8 @@ model CommunityPost {
   @@index([userId])
   @@index([category])
   @@index([locationId])
+  @@index([locationId, category])
+  @@index([category, createdAt])
   @@map("community_posts")
 }
 

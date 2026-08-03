@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { X, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -127,11 +128,12 @@ export function ImageViewer({ images, initialIndex, onClose }: ImageViewerProps)
             else if (swipe > 100) prevImage();
           }}
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Image
             src={images[currentIndex]}
             alt="Viewer"
-            className="max-h-screen max-w-full object-contain cursor-grab active:cursor-grabbing"
+            fill
+            sizes="100vw"
+            className="object-contain cursor-grab active:cursor-grabbing max-h-screen"
             draggable={false}
           />
         </motion.div>

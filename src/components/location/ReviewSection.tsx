@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useTransition } from 'react';
+import Image from 'next/image';
 import { Star, User as UserIcon, MoreHorizontal, Flag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -143,10 +144,15 @@ export function ReviewSection({ locationId, reviews, isAuthenticated }: ReviewSe
             <div key={review.id} className="p-4 border rounded-xl bg-card">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center overflow-hidden">
+                  <div className="relative w-10 h-10 rounded-full bg-muted flex items-center justify-center overflow-hidden">
                     {review.user?.avatar ? (
-                      /* eslint-disable-next-line @next/next/no-img-element */
-                      <img src={review.user.avatar} alt={review.user.name || 'User'} className="w-full h-full object-cover" />
+                      <Image 
+                        src={review.user.avatar} 
+                        alt={review.user.name || 'User'} 
+                        fill
+                        sizes="40px"
+                        className="object-cover" 
+                      />
                     ) : (
                       <UserIcon className="w-5 h-5 text-muted-foreground" />
                     )}

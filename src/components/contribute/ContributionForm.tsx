@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -343,11 +344,17 @@ export function ContributionForm() {
                   <h4 className="text-sm font-medium text-left">Selected Images (Choose one as Cover)</h4>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     {formData.images.map((file, idx) => (
-                      <div key={idx} className={`relative rounded-lg overflow-hidden border-2 cursor-pointer transition-all ${formData.coverImageIndex === idx ? 'border-primary' : 'border-transparent'}`} onClick={() => updateFormData({ coverImageIndex: idx })}>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={URL.createObjectURL(file)} alt="preview" className="w-full h-24 object-cover" />
+                      <div key={idx} className={`relative h-24 rounded-lg overflow-hidden border-2 cursor-pointer transition-all ${formData.coverImageIndex === idx ? 'border-primary' : 'border-transparent'}`} onClick={() => updateFormData({ coverImageIndex: idx })}>
+                        <Image 
+                          src={URL.createObjectURL(file)} 
+                          alt="preview" 
+                          fill
+                          sizes="33vw"
+                          unoptimized
+                          className="object-cover" 
+                        />
                         {formData.coverImageIndex === idx && (
-                          <div className="absolute top-1 right-1 bg-primary text-primary-foreground text-xs px-2 py-0.5 rounded-full font-medium shadow-sm">Cover</div>
+                          <div className="absolute top-1 right-1 bg-primary text-primary-foreground text-xs px-2 py-0.5 rounded-full font-medium shadow-sm z-10">Cover</div>
                         )}
                       </div>
                     ))}

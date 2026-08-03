@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 import { MapPin, Mountain, Star, Calendar } from 'lucide-react';
 import { LocationData } from '@/types';
 import { QRCodeSVG } from 'qrcode.react';
@@ -20,12 +21,14 @@ export const LocationShareCard = React.forwardRef<HTMLDivElement, LocationShareC
       >
         {/* Cover Image */}
         <div className="relative w-full h-[60%]">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img 
+          <Image 
             src={location.images[0] ? `${location.images[0]}?t=${Date.now()}` : '/placeholder.jpg'} 
             alt={location.name}
-            className="object-cover w-full h-full"
+            fill
+            sizes="540px"
+            priority
             crossOrigin="anonymous"
+            className="object-cover"
           />
         </div>
 

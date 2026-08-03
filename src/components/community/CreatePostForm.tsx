@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -276,13 +277,19 @@ export function CreatePostForm({ currentUserId }: { currentUserId?: string }) {
           {files.length > 0 && (
             <div className="flex flex-wrap gap-3 mt-4">
               {files.map((file, index) => (
-                <div key={`${file.name}-${index}`} className="relative inline-block">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={URL.createObjectURL(file)} alt="Upload preview" className="h-24 w-24 rounded-md object-cover border border-border" />
+                <div key={`${file.name}-${index}`} className="relative inline-block h-24 w-24">
+                  <Image 
+                    src={URL.createObjectURL(file)} 
+                    alt="Upload preview" 
+                    fill
+                    sizes="96px"
+                    unoptimized
+                    className="rounded-md object-cover border border-border" 
+                  />
                   <button 
                     type="button" 
                     onClick={() => removeFile(index)} 
-                    className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-0.5 hover:bg-black/80"
+                    className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-0.5 hover:bg-black/80 z-10"
                   >
                     <X className="h-3 w-3" />
                   </button>

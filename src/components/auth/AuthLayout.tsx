@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 
 interface AuthLayoutProps {
   children: React.ReactNode;
@@ -11,11 +12,13 @@ export function AuthLayout({ children, image, title, description }: AuthLayoutPr
   return (
     <div className="flex min-h-screen bg-background">
       <div className="hidden lg:flex lg:w-1/2 relative bg-zinc-900 overflow-hidden">
-         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img 
+        <Image 
           src={image} 
           alt="Background" 
-          className="absolute inset-0 w-full h-full object-cover opacity-70 transition-transform duration-1000 hover:scale-105" 
+          fill
+          priority
+          sizes="50vw"
+          className="object-cover opacity-70 transition-transform duration-1000 hover:scale-105" 
         />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
         <div className="absolute bottom-16 left-16 right-16 text-white">

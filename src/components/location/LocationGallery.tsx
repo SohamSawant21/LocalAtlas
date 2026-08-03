@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
+import Image from 'next/image';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -65,12 +66,12 @@ export function LocationGallery({ images, locationName }: LocationGalleryProps) 
             className="relative aspect-square rounded-xl overflow-hidden group border shadow-sm cursor-pointer bg-muted/20"
             onClick={() => setSelectedIndex(idx + 1)}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img 
+            <Image 
               src={img} 
               alt={`${locationName} - Gallery image ${idx + 1}`} 
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
-              loading="lazy"
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              className="object-cover transition-transform duration-500 group-hover:scale-110" 
             />
             {/* Hover Overlay */}
             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
@@ -124,12 +125,13 @@ export function LocationGallery({ images, locationName }: LocationGalleryProps) 
             className="relative w-full h-full md:max-w-6xl flex items-center justify-center" 
             onClick={(e) => e.stopPropagation()}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img 
+            <Image 
               key={images[selectedIndex]} // force re-render on change for animation
               src={images[selectedIndex]} 
               alt={`${locationName} - Gallery image ${selectedIndex}`} 
-              className="max-w-full max-h-full md:max-h-[90vh] object-contain select-none animate-in zoom-in-95 duration-200"
+              fill
+              sizes="100vw"
+              className="object-contain select-none animate-in zoom-in-95 duration-200 p-4 md:p-8 md:max-h-[90vh]"
               draggable={false}
             />
             

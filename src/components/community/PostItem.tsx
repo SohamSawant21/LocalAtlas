@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -317,20 +318,31 @@ export function PostItem({ post, currentUserId }: { post: any, currentUserId?: s
                 
                 <div className="flex flex-wrap gap-3">
                   {currentImageUrls.map((url, idx) => (
-                    <div key={idx} className="relative inline-block">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={url} alt="Current image" className="h-24 w-24 rounded-md object-cover border border-border" />
-                      <button type="button" onClick={() => removeCurrentImageUrl(idx)} className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-0.5 hover:bg-black/80">
+                    <div key={idx} className="relative inline-block h-24 w-24">
+                      <Image 
+                        src={url} 
+                        alt="Current image" 
+                        fill
+                        sizes="96px"
+                        className="rounded-md object-cover border border-border" 
+                      />
+                      <button type="button" onClick={() => removeCurrentImageUrl(idx)} className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-0.5 hover:bg-black/80 z-10">
                         <X className="h-3 w-3" />
                       </button>
                     </div>
                   ))}
 
                   {editFiles.map((file, idx) => (
-                    <div key={idx} className="relative inline-block">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={URL.createObjectURL(file)} alt="New upload preview" className="h-24 w-24 rounded-md object-cover border border-border" />
-                      <button type="button" onClick={() => removeEditFile(idx)} className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-0.5 hover:bg-black/80">
+                    <div key={idx} className="relative inline-block h-24 w-24">
+                      <Image 
+                        src={URL.createObjectURL(file)} 
+                        alt="New upload preview" 
+                        fill
+                        sizes="96px"
+                        unoptimized
+                        className="rounded-md object-cover border border-border" 
+                      />
+                      <button type="button" onClick={() => removeEditFile(idx)} className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-0.5 hover:bg-black/80 z-10">
                         <X className="h-3 w-3" />
                       </button>
                     </div>
@@ -412,16 +424,26 @@ export function PostItem({ post, currentUserId }: { post: any, currentUserId?: s
               {existingImages.length > 0 && (
                 <div className="mt-4">
                   {existingImages.length === 1 ? (
-                    <div className="rounded-lg overflow-hidden border border-border cursor-pointer hover:opacity-95 transition-opacity" onClick={() => setViewerIndex(0)}>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={existingImages[0]} alt={post.title} loading="lazy" decoding="async" className="w-full h-auto max-h-[500px] object-cover" />
+                    <div className="relative rounded-lg overflow-hidden border border-border cursor-pointer hover:opacity-95 transition-opacity w-full h-[300px] sm:h-[400px] md:h-[500px]" onClick={() => setViewerIndex(0)}>
+                      <Image 
+                        src={existingImages[0]} 
+                        alt={post.title} 
+                        fill
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        className="object-cover" 
+                      />
                     </div>
                   ) : (
                     <div className="flex gap-2 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-thin scrollbar-thumb-muted-foreground/30 hover:scrollbar-thumb-muted-foreground/50">
                       {existingImages.map((url: string, index: number) => (
-                        <div key={index} className="flex-shrink-0 w-[85%] sm:w-[70%] snap-center rounded-lg overflow-hidden border border-border relative cursor-pointer hover:opacity-95 transition-opacity" onClick={() => setViewerIndex(index)}>
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={url} alt={`${post.title} - Image ${index + 1}`} loading="lazy" decoding="async" className="w-full h-64 sm:h-80 object-cover" />
+                        <div key={index} className="flex-shrink-0 w-[85%] sm:w-[70%] h-64 sm:h-80 snap-center rounded-lg overflow-hidden border border-border relative cursor-pointer hover:opacity-95 transition-opacity" onClick={() => setViewerIndex(index)}>
+                          <Image 
+                            src={url} 
+                            alt={`${post.title} - Image ${index + 1}`} 
+                            fill
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                            className="object-cover" 
+                          />
                           <div className="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded-md pointer-events-none">
                             {index + 1} / {existingImages.length}
                           </div>

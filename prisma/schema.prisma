@@ -333,6 +333,7 @@ model Follow {
   following User @relation("following", fields: [followingId], references: [id], onDelete: Cascade)
 
   @@unique([followerId, followingId])
+  @@index([followingId])
   @@map("follows")
 }
 
@@ -352,6 +353,7 @@ model Notification {
   location Location? @relation(fields: [locationId], references: [id])
 
   @@index([userId, read])
+  @@index([userId, createdAt])
   @@map("notifications")
 }
 
@@ -467,6 +469,7 @@ model PollOption {
   
   poll      Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
 
+  @@index([pollId])
   @@map("poll_options")
 }
 
@@ -482,6 +485,8 @@ model PollVote {
   poll      Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
   
   @@unique([userId, pollId])
+  @@index([pollId])
+  @@index([optionId])
   @@map("poll_votes")
 }
 
@@ -496,6 +501,7 @@ model Verification {
   user     User     @relation(fields: [userId], references: [id])
 
   @@unique([userId, locationId])
+  @@index([locationId])
   @@map("verifications")
 }
 

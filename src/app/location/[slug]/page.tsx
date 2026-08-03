@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import Image from 'next/image';
 import { auth } from '@/auth';
 import { getLocationBySlug } from '@/services/location';
 import { ReviewSection } from '@/components/location/ReviewSection';
@@ -53,10 +54,12 @@ export default async function LocationPage({ params }: LocationPageProps) {
         <div className="lg:col-span-2 space-y-8">
           {/* Hero Image */}
           <div className="relative w-full aspect-[16/9] rounded-2xl overflow-hidden group">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img 
+            <Image 
               src={location.images[0] || '/placeholder.jpg'} 
               alt={location.name}
+              fill
+              priority
+              sizes="100vw"
               className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>

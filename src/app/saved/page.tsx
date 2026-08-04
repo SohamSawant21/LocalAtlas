@@ -5,18 +5,29 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { auth } from '@/auth';
 import prisma from '@/lib/prisma';
+import { SavedPlacesFilter } from '@/components/saved/SavedPlacesFilter';
 
 export const metadata: Metadata = {
   title: 'Saved Places - LocalAtlas',
   description: 'Your curated list of hidden gems and future adventures.',
 };
 
-export default async function SavedPlacesPage() {
+export default async function SavedPlacesPage(props: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}) {
   const session = await auth();
+  const searchParams = await props.searchParams;
+  const q = typeof searchParams?.q === 'string' ? searchParams.q : '';
+  const sort = typeof searchParams?.sort === 'string' ? searchParams.sort : 'desc';
+
   const savedPlaces = session?.user?.id 
     ? await prisma.savedPlace.findMany({
-        where: { userId: session.user.id },
+        where: { 
+          userId: session.user.id,
+          ...(q ? { location: { name: { contains: q, mode: 'insensitive' } } } : {})
+        },
         include: { location: true },
+        orderBy: { createdAt: sort === 'asc' ? 'asc' : 'desc' }
       })
     : [];
 
@@ -36,10 +47,7 @@ export default async function SavedPlacesPage() {
             Your curated collection of hidden gems. Plan your next adventure from here.
           </p>
         </div>
-        <div className="w-full md:w-auto flex gap-2" title="Filtering coming soon">
-          <Input placeholder="Search saved places..." className="w-full md:w-[250px]" disabled />
-          <Button variant="outline" disabled>Filter</Button>
-        </div>
+        <SavedPlacesFilter />
       </div>
       
       <div className="mt-8 border-t pt-8">

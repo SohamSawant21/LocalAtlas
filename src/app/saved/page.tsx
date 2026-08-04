@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { auth } from '@/auth';
 import prisma from '@/lib/prisma';
+import { District, LocationCategory } from '@prisma/client';
 import { SavedPlacesFilter } from '@/components/saved/SavedPlacesFilter';
 
 export const metadata: Metadata = {
@@ -19,12 +20,19 @@ export default async function SavedPlacesPage(props: {
   const searchParams = await props.searchParams;
   const q = typeof searchParams?.q === 'string' ? searchParams.q : '';
   const sort = typeof searchParams?.sort === 'string' ? searchParams.sort : 'desc';
+  const category = typeof searchParams?.category === 'string' ? searchParams.category as LocationCategory : undefined;
+  const district = typeof searchParams?.district === 'string' ? searchParams.district as District : undefined;
+
+  const locationWhere: any = {};
+  if (q) locationWhere.name = { contains: q, mode: 'insensitive' };
+  if (category) locationWhere.category = category;
+  if (district) locationWhere.district = district;
 
   const savedPlaces = session?.user?.id 
     ? await prisma.savedPlace.findMany({
         where: { 
           userId: session.user.id,
-          ...(q ? { location: { name: { contains: q, mode: 'insensitive' } } } : {})
+          ...(Object.keys(locationWhere).length > 0 ? { location: locationWhere } : {})
         },
         include: { location: true },
         orderBy: { createdAt: sort === 'asc' ? 'asc' : 'desc' }

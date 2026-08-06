@@ -251,12 +251,28 @@ export default function AboutPage() {
           </div>
         </div>
         
-        {/* Call to Action Footer */}
-        <div className="mt-24 text-center">
-          <h2 className="text-2xl md:text-3xl font-bold mb-6">Ready to start your journey?</h2>
-          <Button size="lg" className="h-14 px-10 text-lg rounded-full shadow-lg shadow-primary/25" asChild>
-            <Link href="/sign-up">Join LocalAtlas Today</Link>
-          </Button>
+      </section>
+
+      {/* Call to Action Section */}
+      <section className="relative py-24 md:py-32 overflow-hidden border-t border-border">
+        <div className="absolute inset-0 bg-primary/5 z-0" />
+        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
+        
+        <div className="container relative z-10 mx-auto px-4 max-w-4xl text-center">
+          <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-6 text-foreground">
+            Ready to Start Your Journey?
+          </h2>
+          <p className="text-xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed">
+            Join thousands of local guides and travelers who are discovering the Konkan coast the right way.
+          </p>
+          <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
+            <Button size="lg" className="h-14 px-10 text-lg rounded-full shadow-lg shadow-primary/25 w-full sm:w-auto" asChild>
+              <Link href="/sign-up">Join LocalAtlas Today</Link>
+            </Button>
+            <Button size="lg" variant="outline" className="h-14 px-10 text-lg rounded-full w-full sm:w-auto bg-background" asChild>
+              <Link href="/explore">Explore the Map</Link>
+            </Button>
+          </div>
         </div>
       </section>
     </div>

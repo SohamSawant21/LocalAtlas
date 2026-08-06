@@ -30,7 +30,7 @@ export const metadata: Metadata = {
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Compass } from 'lucide-react';
+import { ArrowRight, Compass, Map, ShieldCheck, Calendar, Users, Star, Award, Search } from 'lucide-react';
 
 export default function AboutPage() {
   return (
@@ -126,7 +126,139 @@ export default function AboutPage() {
         </div>
       </section>
       
-      {/* Future sections (Features, Community) will be implemented here */}
+      {/* Core Features Grid */}
+      <section className="bg-muted/30 py-20 md:py-32 border-y border-border">
+        <div className="container mx-auto px-4 max-w-7xl">
+          <div className="text-center max-w-3xl mx-auto mb-16 md:mb-24">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-foreground mb-6">
+              Platform Features
+            </h2>
+            <p className="text-lg text-muted-foreground">
+              Everything you need to discover, verify, and plan your ultimate Konkan adventure.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {/* Feature 1 */}
+            <div className="bg-card p-8 rounded-3xl border border-border/50 shadow-sm hover:shadow-md transition-shadow">
+              <div className="bg-primary/10 w-14 h-14 rounded-2xl flex items-center justify-center mb-6 text-primary">
+                <Search className="w-7 h-7" />
+              </div>
+              <h3 className="text-xl font-bold mb-3 text-foreground">Discover</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                Browse a community-curated map of hidden beaches, ancient forts, and secret waterfalls.
+              </p>
+            </div>
+            
+            {/* Feature 2 */}
+            <div className="bg-card p-8 rounded-3xl border border-border/50 shadow-sm hover:shadow-md transition-shadow">
+              <div className="bg-primary/10 w-14 h-14 rounded-2xl flex items-center justify-center mb-6 text-primary">
+                <ShieldCheck className="w-7 h-7" />
+              </div>
+              <h3 className="text-xl font-bold mb-3 text-foreground">Verify</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                Rely on local guides and community consensus to ensure locations are accurate and accessible.
+              </p>
+            </div>
+            
+            {/* Feature 3 */}
+            <div className="bg-card p-8 rounded-3xl border border-border/50 shadow-sm hover:shadow-md transition-shadow">
+              <div className="bg-primary/10 w-14 h-14 rounded-2xl flex items-center justify-center mb-6 text-primary">
+                <Calendar className="w-7 h-7" />
+              </div>
+              <h3 className="text-xl font-bold mb-3 text-foreground">Plan</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                Save your favorite discoveries and organize them into beautiful, routable trip itineraries.
+              </p>
+            </div>
+            
+            {/* Feature 4 */}
+            <div className="bg-card p-8 rounded-3xl border border-border/50 shadow-sm hover:shadow-md transition-shadow">
+              <div className="bg-primary/10 w-14 h-14 rounded-2xl flex items-center justify-center mb-6 text-primary">
+                <Users className="w-7 h-7" />
+              </div>
+              <h3 className="text-xl font-bold mb-3 text-foreground">Share</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                Contribute your own findings, build your reputation, and help fellow travelers.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Community & Trust Section */}
+      <section className="container mx-auto px-4 py-20 md:py-32 max-w-7xl">
+        <div className="text-center max-w-3xl mx-auto mb-16 md:mb-24">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-foreground mb-6">
+            Powered by the Community
+          </h2>
+          <p className="text-lg text-muted-foreground">
+            Trust is the foundation of LocalAtlas. We use decentralized mechanics to ensure data remains high-quality and spam-free.
+          </p>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-16">
+          <div className="bg-gradient-to-br from-background to-muted/50 p-10 md:p-12 rounded-[2.5rem] border border-border/50 shadow-sm relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700">
+              <Award className="w-40 h-40 text-primary" />
+            </div>
+            <div className="relative z-10">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary text-primary-foreground mb-8 shadow-lg">
+                <Star className="w-8 h-8" />
+              </div>
+              <h3 className="text-3xl font-bold mb-4 text-foreground">Reputation System</h3>
+              <p className="text-lg text-muted-foreground leading-relaxed mb-6">
+                Contributors earn reputation points when their shared locations are verified and liked by others. A high reputation unlocks the ability to moderate content, edit listings, and officially verify newly submitted gems.
+              </p>
+              <ul className="space-y-3">
+                <li className="flex items-center gap-3 text-foreground font-medium">
+                  <ArrowRight className="w-5 h-5 text-primary" /> Earn points for quality contributions
+                </li>
+                <li className="flex items-center gap-3 text-foreground font-medium">
+                  <ArrowRight className="w-5 h-5 text-primary" /> Unlock moderation privileges
+                </li>
+                <li className="flex items-center gap-3 text-foreground font-medium">
+                  <ArrowRight className="w-5 h-5 text-primary" /> Build trust within the community
+                </li>
+              </ul>
+            </div>
+          </div>
+          
+          <div className="bg-gradient-to-bl from-background to-muted/50 p-10 md:p-12 rounded-[2.5rem] border border-border/50 shadow-sm relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700">
+              <ShieldCheck className="w-40 h-40 text-primary" />
+            </div>
+            <div className="relative z-10">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary text-primary-foreground mb-8 shadow-lg">
+                <ShieldCheck className="w-8 h-8" />
+              </div>
+              <h3 className="text-3xl font-bold mb-4 text-foreground">Community Verification</h3>
+              <p className="text-lg text-muted-foreground leading-relaxed mb-6">
+                To prevent spam and protect delicate locations, new submissions require verification by trusted locals. Only places that pass community consensus are featured on the public map.
+              </p>
+              <ul className="space-y-3">
+                <li className="flex items-center gap-3 text-foreground font-medium">
+                  <ArrowRight className="w-5 h-5 text-primary" /> Protects sensitive natural sites
+                </li>
+                <li className="flex items-center gap-3 text-foreground font-medium">
+                  <ArrowRight className="w-5 h-5 text-primary" /> Filters out tourist traps and spam
+                </li>
+                <li className="flex items-center gap-3 text-foreground font-medium">
+                  <ArrowRight className="w-5 h-5 text-primary" /> Ensures accurate GPS coordinates
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        
+        {/* Call to Action Footer */}
+        <div className="mt-24 text-center">
+          <h2 className="text-2xl md:text-3xl font-bold mb-6">Ready to start your journey?</h2>
+          <Button size="lg" className="h-14 px-10 text-lg rounded-full shadow-lg shadow-primary/25" asChild>
+            <Link href="/sign-up">Join LocalAtlas Today</Link>
+          </Button>
+        </div>
+      </section>
     </div>
   );
 }
